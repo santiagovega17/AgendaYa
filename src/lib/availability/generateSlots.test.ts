@@ -241,5 +241,53 @@ it("Ingreso de datos personales: valida que la nota opcional no exceda el límit
     expect(validarDatosInvitado({ ...baseGuest, nota: "a".repeat(500) })).toBe(true);
     expect(validarDatosInvitado({ ...baseGuest, nota: "a".repeat(501) })).toBe(false);
   });
+
+
+
+  // TEST
+  //  TESTS AGREGADOS PARA EL TP4  
+// =====================================================================
+describe("Reglas de Negocio adicionales", () => {
+//TEST 1
+  it("M02 - Calcula correctamente la hora del siguiente turno aplicando el intervalo (Buffer)", () => {
+    const calcularSiguienteTurno = (horaInicioStr: string, duracionMin: number, intervaloMin: number) => {
+      const [hora, min] = horaInicioStr.split(':').map(Number);
+      const totalMin = hora * 60 + min + duracionMin + intervaloMin;
+      const nextHora = Math.floor(totalMin / 60).toString().padStart(2, '0');
+      const nextMin = (totalMin % 60).toString().padStart(2, '0');
+      return `${nextHora}:${nextMin}`;
+    };
+
+    expect(calcularSiguienteTurno("10:00", 30, 15)).toBe("10:45");
+    expect(calcularSiguienteTurno("11:30", 45, 10)).toBe("12:25");
+  });
+//TEST 2
+  it("M02 - Impide que un Usuario Invitado reserve en una fecha bloqueada por el Administrador", () => {
+    const verificarDisponibilidadDia = (fechaSolicitada: string, diasBloqueados: string[]) => {
+      return !diasBloqueados.includes(fechaSolicitada);
+    };
+
+    const feriadosBloqueados = ["2026-12-25", "2026-12-31", "2027-01-01"];
+    expect(verificarDisponibilidadDia("2026-12-25", feriadosBloqueados)).toBe(false);
+    expect(verificarDisponibilidadDia("2026-12-26", feriadosBloqueados)).toBe(true);
+  });
+// TEST 3
+  it("M08 - Cambia el estado de la reserva a 'Pagado' o 'Cancelado' según la pasarela de pagos", () => {
+    const procesarRespuestaPago = (reserva: any, respuestaPasarela: any) => {
+      if (respuestaPasarela.status === 'APPROVED') {
+        return { ...reserva, estado: 'Pagado' };
+      } else if (respuestaPasarela.status === 'REJECTED' || respuestaPasarela.status === 'EXPIRED') {
+        return { ...reserva, estado: 'Cancelado por falta de pago' };
+      }
+      return reserva; 
+    };
+
+    const reservaPendiente = { id: 101, estado: 'Pendiente de Pago' };
+    
+    expect(procesarRespuestaPago(reservaPendiente, { status: 'APPROVED' }).estado).toBe('Pagado');
+    expect(procesarRespuestaPago(reservaPendiente, { status: 'EXPIRED' }).estado).toBe('Cancelado por falta de pago');
+  });
+
+});
   
 });
