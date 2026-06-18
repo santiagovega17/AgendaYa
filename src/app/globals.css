@@ -1,26 +1,57 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #0f0a1e;
+  --foreground: #f0f0f5;
+  --accent: #6366f1;
+  --glass-bg: rgba(255, 255, 255, 0.1);
+  --glass-border: rgba(255, 255, 255, 0.2);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-accent: var(--accent);
+  --font-sans: var(--font-jakarta);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-jakarta), system-ui, sans-serif;
+  font-size: 16px;
+  min-height: 100vh;
+}
+
+.glass-bg {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(135deg, #0f0a1e 0%, #1e1040 40%, #2d1b69 70%, #1a1a2e 100%);
+  overflow: hidden;
+}
+
+.glass-bg::before,
+.glass-bg::after {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.4;
+}
+
+.glass-bg::before {
+  width: 500px;
+  height: 500px;
+  background: #6366f1;
+  top: -100px;
+  right: -100px;
+}
+
+.glass-bg::after {
+  width: 400px;
+  height: 400px;
+  background: #a855f7;
+  bottom: -50px;
+  left: -50px;
 }
