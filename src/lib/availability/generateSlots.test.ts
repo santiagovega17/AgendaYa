@@ -6,7 +6,7 @@ import type {
   SlotLock,
   WeeklySchedule,
 } from "@/lib/types";
-import { generateSlots, makeSlotId } from "./generateSlots";
+import { generateSlots, makeSlotId, getAvailableDates } from "./generateSlots";
 
 const eventType: EventType = {
   id: "evt-1",
