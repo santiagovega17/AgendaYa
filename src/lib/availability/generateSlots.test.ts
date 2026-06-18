@@ -224,5 +224,22 @@ describe("generateSlots", () => {
     expect(validarDatosInvitado({ nombre: "Juan", email: "juantest.com", telefono: "12345678" })).toBe(false);
     expect(validarDatosInvitado({ nombre: "Juan", email: "juan@test.com", telefono: "1234a567" })).toBe(false);
   });
+
+it("Ingreso de datos personales: valida que la nota opcional no exceda el límite de caracteres", () => {
+    const validarDatosInvitado = (invitado: any) => {
+      if (!invitado.nombre || invitado.nombre.trim() === "") return false;
+      if (!invitado.email || !invitado.email.includes("@")) return false;
+      if (invitado.telefono && !/^\d+$/.test(invitado.telefono)) return false;
+      if (invitado.nota && invitado.nota.length > 500) return false;
+      return true;
+    };
+
+    const baseGuest = { nombre: "Juan", email: "juan@test.com", telefono: "12345678" };
+    
+    expect(validarDatosInvitado(baseGuest)).toBe(true);
+    expect(validarDatosInvitado({ ...baseGuest, nota: "Nota corta" })).toBe(true);
+    expect(validarDatosInvitado({ ...baseGuest, nota: "a".repeat(500) })).toBe(true);
+    expect(validarDatosInvitado({ ...baseGuest, nota: "a".repeat(501) })).toBe(false);
+  });
   
 });
