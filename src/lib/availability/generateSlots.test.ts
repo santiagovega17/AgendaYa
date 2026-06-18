@@ -1,10 +1,189 @@
 import { describe, expect, it } from "vitest";
-import { makeSlotId } from "./generateSlots";
+import type {
+  Booking,
+  BookingSettings,
+  EventType,
+  SlotLock,
+  WeeklySchedule,
+} from "@/lib/types";
+import { generateSlots, makeSlotId } from "./generateSlots";
 
-describe("makeSlotId", () => {
-  it("combina fecha, hora y tipo de evento en un id único", () => {
-    expect(makeSlotId("2026-06-17", "09:00", "evt-1")).toBe(
-      "2026-06-17_09:00_evt-1"
+const eventType: EventType = {
+  id: "evt-1",
+  adminId: "admin-1",
+  nombre: "Consulta",
+  duracionMin: 30,
+  modalidad: "presencial",
+  confirmacionAuto: true,
+  descripcion: "Consulta de prueba",
+  activo: true,
+};
+
+const settings: BookingSettings = {
+  intervaloMin: 10,
+  antelacionMinHoras: 2,
+  antelacionMaxDias: 30,
+  limiteReservasDia: 3,
+};
+
+const wednesdaySchedule: WeeklySchedule[] = [
+  {
+    id: "sched-wed",
+    diaSemana: 3,
+    franjas: [{ inicio: "09:00", fin: "12:00" }],
+    tipo: "permanent",
+    fechaInicio: "2026-01-01",
+  },
+];
+
+function baseParams(overrides: Partial<Parameters<typeof generateSlots>[0]> = {}) {
+  return {
+    fecha: "2026-06-17",
+    eventType,
+    weeklySchedules: wednesdaySchedule,
+    blockedDates: [],
+    bookings: [],
+    settings,
+    locks: [],
+    now: new Date("2026-06-16T08:00:00Z"),
+    ...overrides,
+  };
+}
+
+describe("generateSlots", () => {
+  it("genera slots según horario, duración del evento e intervalo entre turnos", () => {
+    const slots = generateSlots(baseParams());
+
+    expect(slots.map((s) => s.horaInicio)).toEqual(["09:00", "09:40", "10:20", "11:00"]);
+    expect(slots[0]).toMatchObject({
+      id: makeSlotId("2026-06-17", "09:00", "evt-1"),
+      horaFin: "09:30",
+      disponible: true,
+    });
+    expect(slots.every((s) => s.disponible)).toBe(true);
+  });
+
+  it("no genera slots en fechas bloqueadas, fuera de la ventana de antelación o con límite diario alcanzado", () => {
+    const blocked = generateSlots(
+      baseParams({ blockedDates: [{ fecha: "2026-06-17", motivo: "Feriado" }] })
     );
+    expect(blocked).toEqual([]);
+
+    const tooFar = generateSlots(
+      baseParams({
+        fecha: "2026-08-01",
+        weeklySchedules: [
+          {
+            id: "sched-sat",
+            diaSemana: 6,
+            franjas: [{ inicio: "09:00", fin: "12:00" }],
+            tipo: "permanent",
+            fechaInicio: "2026-01-01",
+          },
+        ],
+      })
+    );
+    expect(tooFar).toEqual([]);
+
+    const bookings: Booking[] = [
+      {
+        id: "bk-1",
+        numeroReserva: "AYA-1",
+        eventTypeId: "evt-1",
+        fecha: "2026-06-17",
+        horaInicio: "09:00",
+        horaFin: "09:30",
+        invitado: {
+          nombre: "Ana",
+          apellido: "Pérez",
+          email: "ana@test.com",
+          telefono: "1111111111",
+        },
+        estado: "confirmada",
+        createdAt: "2026-06-15T10:00:00Z",
+      },
+      {
+        id: "bk-2",
+        numeroReserva: "AYA-2",
+        eventTypeId: "evt-1",
+        fecha: "2026-06-17",
+        horaInicio: "09:40",
+        horaFin: "10:10",
+        invitado: {
+          nombre: "Luis",
+          apellido: "Gómez",
+          email: "luis@test.com",
+          telefono: "2222222222",
+        },
+        estado: "pendiente",
+        createdAt: "2026-06-15T11:00:00Z",
+      },
+      {
+        id: "bk-3",
+        numeroReserva: "AYA-3",
+        eventTypeId: "evt-1",
+        fecha: "2026-06-17",
+        horaInicio: "10:20",
+        horaFin: "10:50",
+        invitado: {
+          nombre: "Eva",
+          apellido: "Ruiz",
+          email: "eva@test.com",
+          telefono: "3333333333",
+        },
+        estado: "confirmada",
+        createdAt: "2026-06-15T12:00:00Z",
+      },
+    ];
+
+    const limitReached = generateSlots(baseParams({ bookings }));
+    expect(limitReached).toEqual([]);
+  });
+
+  it("marca slots ocupados o bloqueados por otra sesión como no disponibles", () => {
+    const bookings: Booking[] = [
+      {
+        id: "bk-1",
+        numeroReserva: "AYA-1",
+        eventTypeId: "evt-1",
+        fecha: "2026-06-17",
+        horaInicio: "09:00",
+        horaFin: "09:30",
+        invitado: {
+          nombre: "Ana",
+          apellido: "Pérez",
+          email: "ana@test.com",
+          telefono: "1111111111",
+        },
+        estado: "confirmada",
+        createdAt: "2026-06-15T10:00:00Z",
+      },
+    ];
+
+    const locks: SlotLock[] = [
+      {
+        slotId: makeSlotId("2026-06-17", "09:40", "evt-1"),
+        eventTypeId: "evt-1",
+        fecha: "2026-06-17",
+        horaInicio: "09:40",
+        sessionId: "other-session",
+        expiresAt: "2026-06-17T12:00:00Z",
+      },
+    ];
+
+    const slots = generateSlots(
+      baseParams({
+        bookings,
+        locks,
+        sessionId: "my-session",
+      })
+    );
+
+    const byHour = Object.fromEntries(slots.map((s) => [s.horaInicio, s]));
+
+    expect(byHour["09:00"].disponible).toBe(false);
+    expect(byHour["09:40"].disponible).toBe(false);
+    expect(byHour["09:40"].lockedBySession).toBe("other-session");
+    expect(byHour["10:20"].disponible).toBe(true);
   });
 });
