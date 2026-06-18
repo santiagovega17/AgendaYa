@@ -1,9 +1,12 @@
 name: Pipeline de CI
 
-# Se dispara al abrir un PR y cada vez que se actualiza el branch del PR (evento synchronize)
+# Se dispara en PRs hacia main, en cada push a main y manualmente desde Actions
 on:
+  push:
+    branches: [ main ]
   pull_request:
     branches: [ main ]
+  workflow_dispatch:
 
 jobs:
   build-and-test:
