@@ -1,1 +1,32 @@
-//prueba
+name: Pipeline de CI
+
+# 1 y 2. Triggers: Pull Request y actualizaciones del branch (push)
+on:
+  push:
+    branches: [ "**" ] # Se ejecuta al actualizar CUALQUIER rama
+  pull_request:
+    branches: [ "main" ] # Se ejecuta al hacer un PR hacia main
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20' # Versión LTS de Node
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      # 3. Ejecutar los tests unitarios
+      - name: Correr Pruebas Unitarias
+        run: npm run test
+
+      # 4. Realizar el build del proyecto (Next.js)
+      - name: Construir Proyecto (Build)
+        run: npm run build
