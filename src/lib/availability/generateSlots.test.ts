@@ -187,6 +187,89 @@ describe("generateSlots", () => {
     expect(byHour["10:20"].disponible).toBe(true);
   });
 
+  it("getAvailableDates incluye solo días del mes con slots reservables", () => {
+    const dates = getAvailableDates({
+      year: 2026,
+      month: 5,
+      eventType,
+      weeklySchedules: wednesdaySchedule,
+      blockedDates: [{ fecha: "2026-06-17", motivo: "Feriado" }],
+      bookings: [],
+      settings,
+      locks: [],
+      now: new Date("2026-06-16T08:00:00Z"),
+    });
+
+    expect(dates).toContain("2026-06-24");
+    expect(dates).not.toContain("2026-06-17");
+  });
+
+  it("no marca como ocupados los slots de reservas canceladas o completadas", () => {
+    const bookings: Booking[] = [
+      {
+        id: "bk-cancelada",
+        numeroReserva: "AYA-C",
+        eventTypeId: "evt-1",
+        fecha: "2026-06-17",
+        horaInicio: "09:00",
+        horaFin: "09:30",
+        invitado: {
+          nombre: "Ana",
+          apellido: "Pérez",
+          email: "ana@test.com",
+          telefono: "1111111111",
+        },
+        estado: "cancelada",
+        createdAt: "2026-06-15T10:00:00Z",
+      },
+      {
+        id: "bk-completada",
+        numeroReserva: "AYA-D",
+        eventTypeId: "evt-1",
+        fecha: "2026-06-17",
+        horaInicio: "09:40",
+        horaFin: "10:10",
+        invitado: {
+          nombre: "Luis",
+          apellido: "Gómez",
+          email: "luis@test.com",
+          telefono: "2222222222",
+        },
+        estado: "completada",
+        createdAt: "2026-06-15T11:00:00Z",
+      },
+    ];
+
+    const slots = generateSlots(baseParams({ bookings }));
+    const byHour = Object.fromEntries(slots.map((s) => [s.horaInicio, s]));
+
+    expect(byHour["09:00"].disponible).toBe(true);
+    expect(byHour["09:40"].disponible).toBe(true);
+  });
+
+  it("libera un slot cuando el bloqueo temporal de otra sesión ya expiró", () => {
+    const locks: SlotLock[] = [
+      {
+        slotId: makeSlotId("2026-06-17", "09:00", "evt-1"),
+        eventTypeId: "evt-1",
+        fecha: "2026-06-17",
+        horaInicio: "09:00",
+        sessionId: "other-session",
+        expiresAt: "2026-06-16T07:00:00Z",
+      },
+    ];
+
+    const slots = generateSlots(
+      baseParams({
+        locks,
+        sessionId: "my-session",
+        now: new Date("2026-06-16T08:00:00Z"),
+      })
+    );
+
+    expect(slots.find((s) => s.horaInicio === "09:00")?.disponible).toBe(true);
+  });
+
   it("Visualización de disponibilidad: muestra correctamente las franjas laborales disponibles del administrador (AYA-M04-RF02)", () => {
     const slots = generateSlots(
       baseParams({
