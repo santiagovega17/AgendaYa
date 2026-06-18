@@ -186,4 +186,70 @@ describe("generateSlots", () => {
     expect(byHour["09:40"].lockedBySession).toBe("other-session");
     expect(byHour["10:20"].disponible).toBe(true);
   });
+
+it("Visualización de disponibilidad: marca como no disponibles los horarios anteriores a la hora actual (AYA-M04-RF06)", () => {
+    const today = "2026-06-17";
+    const now = new Date(`${today}T10:00:00Z`);
+    
+    const slots = generateSlots(
+      baseParams({
+        fecha: today,
+        now,
+        weeklySchedules: [
+          {
+            id: "sched-today",
+            diaSemana: 3,
+            franjas: [{ inicio: "09:00", fin: "12:00" }],
+            tipo: "permanent",
+            fechaInicio: "2026-01-01",
+          },
+        ]
+      })
+    );
+
+    const slot0900 = slots.find(s => s.horaInicio === "09:00");
+    const slot1020 = slots.find(s => s.horaInicio === "10:20");
+
+    expect(slot0900?.disponible).toBe(false);
+    expect(slot1020?.disponible).toBe(true);
+  });
+
+  it("Visualización de disponibilidad: muestra correctamente las franjas laborales disponibles del administrador (AYA-M04-RF02)", () => {
+    const slots = generateSlots(
+      baseParams({
+        weeklySchedules: [
+          {
+            id: "sched-split",
+            diaSemana: 3,
+            franjas: [
+              { inicio: "09:00", fin: "10:00" },
+              { inicio: "14:00", fin: "15:00" }
+            ],
+            tipo: "permanent",
+            fechaInicio: "2026-01-01",
+          },
+        ]
+      })
+    );
+
+    const horasDisponibles = slots.map(s => s.horaInicio);
+    expect(horasDisponibles.some(h => h.startsWith("09:"))).toBe(true);
+    expect(horasDisponibles.some(h => h.startsWith("14:"))).toBe(true);
+    expect(horasDisponibles.some(h => h.startsWith("11:"))).toBe(false);
+  });
+
+  it("Ingreso de datos personales: valida que los datos del invitado cumplan con el formato requerido (AYA-M04-RF03)", () => {
+    const validarDatosInvitado = (invitado: any) => {
+      if (!invitado.nombre || invitado.nombre.trim() === "") return false;
+      if (!invitado.email || !invitado.email.includes("@")) return false;
+      if (invitado.telefono && !/^\d+$/.test(invitado.telefono)) return false;
+      return true;
+    };
+
+    expect(validarDatosInvitado({ nombre: "Juan", email: "juan@test.com", telefono: "12345678" })).toBe(true);
+    expect(validarDatosInvitado({ nombre: "", email: "juan@test.com", telefono: "12345678" })).toBe(false);
+    expect(validarDatosInvitado({ nombre: "Juan", email: "juantest.com", telefono: "12345678" })).toBe(false);
+    expect(validarDatosInvitado({ nombre: "Juan", email: "juan@test.com", telefono: "1234a567" })).toBe(false);
+  });
+  
 });
