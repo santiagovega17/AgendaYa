@@ -1,11 +1,9 @@
 name: Pipeline de CI
 
-# 1 y 2. Triggers: Pull Request y actualizaciones del branch (push)
+# Se dispara al abrir un PR y cada vez que se actualiza el branch del PR (evento synchronize)
 on:
-  push:
-    branches: [ "**" ] # Se ejecuta al actualizar CUALQUIER rama
   pull_request:
-    branches: [ "main" ] # Se ejecuta al hacer un PR hacia main
+    branches: [ main ]
 
 jobs:
   build-and-test:
@@ -18,15 +16,14 @@ jobs:
       - name: Configurar Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20' # Versión LTS de Node
+          node-version: "20"
+          cache: "npm"
 
       - name: Instalar dependencias
         run: npm ci
 
-      # 3. Ejecutar los tests unitarios
-      - name: Correr Pruebas Unitarias
+      - name: Correr pruebas unitarias
         run: npm run test
 
-      # 4. Realizar el build del proyecto (Next.js)
-      - name: Construir Proyecto (Build)
+      - name: Construir proyecto (build)
         run: npm run build
