@@ -80,7 +80,7 @@ export default function DisponibilidadPage() {
 
   const saveSettings = () => {
     updateSettings(localSettings);
-    toast("Configuración actualizada. Los slots públicos se recalcularon.", "success");
+    toast("Configuracion actualizada. Los slots públicos se recalcularon.", "success");
   };
 
   return (
