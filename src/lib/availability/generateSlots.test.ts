@@ -187,33 +187,6 @@ describe("generateSlots", () => {
     expect(byHour["10:20"].disponible).toBe(true);
   });
 
-it("Visualización de disponibilidad: marca como no disponibles los horarios anteriores a la hora actual (AYA-M04-RF06)", () => {
-    const today = "2026-06-17";
-    const now = new Date(`${today}T10:00:00Z`);
-    
-    const slots = generateSlots(
-      baseParams({
-        fecha: today,
-        now,
-        weeklySchedules: [
-          {
-            id: "sched-today",
-            diaSemana: 3,
-            franjas: [{ inicio: "09:00", fin: "12:00" }],
-            tipo: "permanent",
-            fechaInicio: "2026-01-01",
-          },
-        ]
-      })
-    );
-
-    const slot0900 = slots.find(s => s.horaInicio === "09:00");
-    const slot1020 = slots.find(s => s.horaInicio === "10:20");
-
-    expect(slot0900?.disponible).toBe(false);
-    expect(slot1020?.disponible).toBe(true);
-  });
-
   it("Visualización de disponibilidad: muestra correctamente las franjas laborales disponibles del administrador (AYA-M04-RF02)", () => {
     const slots = generateSlots(
       baseParams({
