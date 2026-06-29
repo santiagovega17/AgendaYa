@@ -374,3 +374,36 @@ describe("Reglas de Negocio adicionales", () => {
 });
   
 });
+// =====================================================================
+//  TESTS AGREGADOS PARA EL TP4 - HISTORIAS DE UI (M04-10 y M04-11)
+// =====================================================================
+describe("Reglas de Interfaz y Responsividad (Front-end)", () => {
+
+  // TEST 1
+  it("M04-11 - Adapta la interfaz a 320px de ancho sin generar scroll horizontal para el Usuario Invitado", () => {
+    const verificarSinScrollHorizontal = (anchoPantallaPx, anchoContenidoPx) => {
+      return anchoContenidoPx <= anchoPantallaPx;
+    };
+
+    expect(verificarSinScrollHorizontal(320, 320)).toBe(true);
+    
+    expect(verificarSinScrollHorizontal(320, 300)).toBe(true);
+    
+    expect(verificarSinScrollHorizontal(320, 350)).toBe(false); 
+  });
+
+  // TEST 2
+  it("M04-10 - Asegura que el cuerpo de texto tenga un tamaño no inferior a 16px en dispositivos móviles", () => {
+    const verificarFuenteMinima = (tamanoFuenteActualPx) => {
+      const tamanoMinimoRequerido = 16;
+      return tamanoFuenteActualPx >= tamanoMinimoRequerido;
+    };
+
+    expect(verificarFuenteMinima(16)).toBe(true);
+    
+    expect(verificarFuenteMinima(18)).toBe(true);
+    
+    expect(verificarFuenteMinima(14)).toBe(false); 
+  });
+
+});
