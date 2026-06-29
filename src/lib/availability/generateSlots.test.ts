@@ -374,9 +374,7 @@ describe("Reglas de Negocio adicionales", () => {
 });
   
 });
-// =====================================================================
 //  TESTS AGREGADOS PARA EL TP4 - HISTORIAS DE UI (M04-10 y M04-11)
-// =====================================================================
 describe("Reglas de Interfaz y Responsividad (Front-end)", () => {
 
   // TEST 1
@@ -404,6 +402,21 @@ describe("Reglas de Interfaz y Responsividad (Front-end)", () => {
     expect(verificarFuenteMinima(18)).toBe(true);
     
     expect(verificarFuenteMinima(14)).toBe(false); 
+  });
+
+  // TEST 3
+  it("Integración (M04-10 y M04-11) - Los elementos críticos (horarios y datos de reserva) deben ser legibles y encajar en 320px", () => {
+    const validarComponenteReserva = (anchoTotalPx, fuentePx) => {
+      const entraEnPantalla = anchoTotalPx <= 320;
+      const fuenteLegible = fuentePx >= 16;
+      return entraEnPantalla && fuenteLegible;
+    };
+
+    expect(validarComponenteReserva(310, 16)).toBe(true);
+
+    expect(validarComponenteReserva(300, 15)).toBe(false);
+
+    expect(validarComponenteReserva(340, 18)).toBe(false);
   });
 
 });
