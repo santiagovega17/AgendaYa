@@ -270,6 +270,52 @@ describe("generateSlots", () => {
     expect(slots.find((s) => s.horaInicio === "09:00")?.disponible).toBe(true);
   });
 
+  it("no genera slots en fechas pasadas", () => {
+    const slots = generateSlots(
+      baseParams({
+        fecha: "2026-06-15",
+        now: new Date("2026-06-16T08:00:00Z"),
+      })
+    );
+
+    expect(slots).toEqual([]);
+  });
+
+  it("no genera slots en días sin horario configurado para ese día de la semana", () => {
+    const slots = generateSlots(
+      baseParams({
+        fecha: "2026-06-18",
+        now: new Date("2026-06-16T08:00:00Z"),
+      })
+    );
+
+    expect(slots).toEqual([]);
+  });
+
+  it("mantiene disponible un slot bloqueado por la propia sesión del usuario", () => {
+    const locks: SlotLock[] = [
+      {
+        slotId: makeSlotId("2026-06-17", "09:00", "evt-1"),
+        eventTypeId: "evt-1",
+        fecha: "2026-06-17",
+        horaInicio: "09:00",
+        sessionId: "my-session",
+        expiresAt: "2026-06-17T12:00:00Z",
+      },
+    ];
+
+    const slot = generateSlots(
+      baseParams({
+        locks,
+        sessionId: "my-session",
+      })
+    ).find((s) => s.horaInicio === "09:00");
+
+    expect(slot?.disponible).toBe(true);
+    expect(slot?.lockedBySession).toBe("my-session");
+    expect(slot?.lockExpiresAt).toBe("2026-06-17T12:00:00Z");
+  });
+
   it("Visualización de disponibilidad: muestra correctamente las franjas laborales disponibles del administrador (AYA-M04-RF02)", () => {
     const slots = generateSlots(
       baseParams({
