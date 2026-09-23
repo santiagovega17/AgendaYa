@@ -88,6 +88,8 @@ export function MonthCalendar({
               type="button"
               disabled={!inMonth || isDisabled}
               onClick={() => onSelectDate?.(dateStr)}
+              data-cy={status === "available" ? "booking-date" : `calendar-day-${dateStr}`}
+              data-date={dateStr}
               className={cn(
                 "aspect-square rounded-lg text-sm transition-colors",
                 !inMonth && "invisible",

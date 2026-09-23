@@ -135,7 +135,7 @@ export default function BookingPage() {
 
   if (!isValidAdmin) {
     return (
-      <GlassCard className="mt-12 text-center">
+      <GlassCard className="mt-12 text-center" data-cy="agenda-not-found">
         <h1 className="text-xl font-bold text-white">Agenda no encontrada</h1>
         <p className="mt-2 text-white/60">El enlace que ingresaste no existe.</p>
       </GlassCard>
@@ -238,7 +238,7 @@ export default function BookingPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-cy="booking-page">
       <div className="text-center">
         {profile.foto && (
           <img
@@ -247,18 +247,22 @@ export default function BookingPage() {
             className="mx-auto mb-3 h-16 w-16 rounded-full border-2 border-white/20"
           />
         )}
-        <h1 className="text-xl font-bold text-white">{profile.nombre}</h1>
+        <h1 className="text-xl font-bold text-white" data-cy="booking-admin-name">
+          {profile.nombre}
+        </h1>
         <p className="text-sm text-white/60">Reservá tu turno</p>
       </div>
 
       <StepIndicator current={step} />
 
       {step === 0 && (
-        <div className="space-y-3">
+        <div className="space-y-3" data-cy="event-list">
           {activeEvents.map((evt) => (
             <button
               key={evt.id}
               onClick={() => selectEvent(evt)}
+              data-cy="event-option"
+              data-event-id={evt.id}
               className="w-full rounded-2xl border border-white/20 bg-white/10 p-4 text-left backdrop-blur-xl transition-colors hover:bg-white/15"
             >
               <div className="flex items-center justify-between">
@@ -275,8 +279,13 @@ export default function BookingPage() {
       )}
 
       {step === 1 && selectedEvent && (
-        <div className="space-y-4">
-          <GlassButton variant="ghost" size="sm" onClick={() => setStep(0)}>
+        <div className="space-y-4" data-cy="booking-step-datetime">
+          <GlassButton
+            variant="ghost"
+            size="sm"
+            data-cy="booking-back"
+            onClick={() => setStep(0)}
+          >
             <ChevronLeft size={16} />
             Volver
           </GlassButton>
@@ -298,7 +307,7 @@ export default function BookingPage() {
           </GlassCard>
 
           {selectedDate && (
-            <div>
+            <div data-cy="slot-list">
               <h3 className="mb-2 text-sm font-medium text-white/80">
                 Horarios —{" "}
                 {format(parse(selectedDate, "yyyy-MM-dd", new Date()), "d MMMM", {
@@ -311,6 +320,8 @@ export default function BookingPage() {
                     key={slot.id}
                     disabled={!slot.disponible}
                     onClick={() => selectSlot(slot)}
+                    data-cy={slot.disponible ? "slot-option" : "slot-unavailable"}
+                    data-slot-id={slot.id}
                     className={`rounded-xl border py-3 text-sm font-medium transition-colors ${
                       slot.disponible
                         ? "border-white/20 bg-white/10 text-white hover:bg-indigo-500/30"
@@ -323,7 +334,7 @@ export default function BookingPage() {
                 ))}
               </div>
               {slots.length === 0 && (
-                <p className="text-center text-sm text-white/50">
+                <p className="text-center text-sm text-white/50" data-cy="no-slots">
                   No hay horarios disponibles este día.
                 </p>
               )}
@@ -333,10 +344,11 @@ export default function BookingPage() {
       )}
 
       {step === 2 && selectedSlot && (
-        <div className="space-y-4">
+        <div className="space-y-4" data-cy="booking-step-guest">
           <GlassButton
             variant="ghost"
             size="sm"
+            data-cy="booking-back"
             onClick={() => {
               releaseSessionLocks(sessionId.current);
               setStep(1);
@@ -351,17 +363,19 @@ export default function BookingPage() {
           {lockExpiresAt && <CountdownTimer expiresAt={lockExpiresAt} />}
 
           <GlassCard className="space-y-4">
-            <p className="text-sm text-white/60">
+            <p className="text-sm text-white/60" data-cy="booking-summary">
               {selectedEvent?.nombre} · {selectedSlot.fecha} · {selectedSlot.horaInicio}
             </p>
             <GlassInput
               label="Nombre"
+              data-cy="guest-nombre"
               value={form.nombre}
               onChange={(e) => setForm({ ...form, nombre: e.target.value })}
               error={errors.nombre}
             />
             <GlassInput
               label="Apellido"
+              data-cy="guest-apellido"
               value={form.apellido}
               onChange={(e) => setForm({ ...form, apellido: e.target.value })}
               error={errors.apellido}
@@ -369,6 +383,7 @@ export default function BookingPage() {
             <GlassInput
               label="Email"
               type="email"
+              data-cy="guest-email"
               value={form.email}
               onChange={(e) => setForm({ ...form, email: e.target.value })}
               error={errors.email}
@@ -376,18 +391,25 @@ export default function BookingPage() {
             <GlassInput
               label="Teléfono"
               type="tel"
+              data-cy="guest-telefono"
               value={form.telefono}
               onChange={(e) => setForm({ ...form, telefono: e.target.value })}
               error={errors.telefono}
             />
             <GlassTextarea
               label="Nota (opcional)"
+              data-cy="guest-nota"
               value={form.nota}
               onChange={(e) => setForm({ ...form, nota: e.target.value })}
               showCount
               maxLength={200}
             />
-            <GlassButton className="w-full" size="lg" onClick={submitForm}>
+            <GlassButton
+              className="w-full"
+              size="lg"
+              data-cy="confirm-booking"
+              onClick={submitForm}
+            >
               Confirmar reserva
             </GlassButton>
           </GlassCard>
@@ -395,18 +417,21 @@ export default function BookingPage() {
       )}
 
       {step === 3 && confirmedBooking && (
-        <GlassCard className="text-center">
+        <GlassCard className="text-center" data-cy="booking-success">
           <CheckCircle className="mx-auto mb-4 text-emerald-400" size={48} />
           <h2 className="text-xl font-bold text-white">¡Reserva confirmada!</h2>
           <p className="mt-2 text-white/60">
-            Número de reserva: <strong className="text-white">{confirmedBooking.numeroReserva}</strong>
+            Número de reserva:{" "}
+            <strong className="text-white" data-cy="booking-number">
+              {confirmedBooking.numeroReserva}
+            </strong>
           </p>
           <div className="mt-4 space-y-1 text-sm text-white/70">
             <p>{selectedEvent?.nombre}</p>
             <p>
               {confirmedBooking.fecha} a las {confirmedBooking.horaInicio}
             </p>
-            <p>
+            <p data-cy="booking-guest-name">
               {confirmedBooking.invitado.nombre} {confirmedBooking.invitado.apellido}
             </p>
           </div>
