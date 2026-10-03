@@ -4,6 +4,12 @@
  *
  * Arrange → Act → Assert sobre /agenda/dr-garcia
  */
+function capturarPaso(nombre: string) {
+  // El fondo fijo se parte al armar capturas altas. Lo dejamos en el flujo del documento.
+  cy.get(".glass-bg").invoke("css", "position", "absolute");
+  cy.get('[data-cy="booking-page"]').screenshot(nombre, { padding: 16 });
+}
+
 describe("Reserva pública — happy path", () => {
   beforeEach(() => {
     // Estado limpio: el store de Zustand persiste en localStorage
@@ -18,12 +24,23 @@ describe("Reserva pública — happy path", () => {
   it("completa una reserva de punta a punta", () => {
     // --- Arrange / Act: elegir tipo de evento ---
     cy.get('[data-cy="event-list"]').should("be.visible");
-    cy.get('[data-cy="event-option"]').first().click();
+    capturarPaso("01-elegir-evento");
+
+    // El click se pierde si llega antes de que React hidrate el HTML del servidor.
+    cy.get('[data-cy="event-option"]')
+      .first()
+      .should(($btn) => {
+        const hydrated = Object.keys($btn[0]).some((key) => key.startsWith("__react"));
+        expect(hydrated, "botón hidratado").to.eq(true);
+      })
+      .click();
 
     // --- Act: elegir fecha disponible y horario ---
     cy.get('[data-cy="booking-step-datetime"]').should("be.visible");
     cy.get('[data-cy="booking-date"]').first().click();
     cy.get('[data-cy="slot-list"]').should("be.visible");
+    cy.get('[data-cy="slot-option"]').should("have.length.at.least", 1);
+    capturarPaso("02-fecha-y-horario");
     cy.get('[data-cy="slot-option"]').first().click();
 
     // --- Act: completar datos del invitado ---
@@ -33,10 +50,12 @@ describe("Reserva pública — happy path", () => {
     cy.get('[data-cy="guest-email"]').type("bruno.moyano@test.com");
     cy.get('[data-cy="guest-telefono"]').type("+54 11 1234-5678");
     cy.get('[data-cy="guest-nota"]').type("Reserva de prueba E2E");
+    capturarPaso("03-datos-del-invitado");
     cy.get('[data-cy="confirm-booking"]').click();
 
     // --- Assert: pantalla de éxito ---
     cy.get('[data-cy="booking-success"]').should("be.visible");
+    capturarPaso("04-reserva-confirmada");
     cy.get('[data-cy="booking-success"]').should(
       "contain.text",
       "¡Reserva confirmada!"
