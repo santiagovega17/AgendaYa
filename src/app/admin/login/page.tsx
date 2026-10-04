@@ -26,17 +26,18 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center p-4">
+    <div className="flex min-h-screen items-center justify-center p-4" data-cy="login-page">
       <GlassCard className="w-full max-w-md">
         <div className="mb-6 flex flex-col items-center gap-2">
           <Calendar className="text-indigo-400" size={36} />
           <h1 className="text-2xl font-bold text-white">AgendaYa</h1>
           <p className="text-sm text-white/60">Iniciá sesión en tu panel</p>
         </div>
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4" data-cy="login-form">
           <GlassInput
             label="Email"
             type="email"
+            data-cy="login-email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
@@ -44,11 +45,12 @@ export default function LoginPage() {
           <GlassInput
             label="Contraseña"
             type="password"
+            data-cy="login-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
           />
-          <GlassButton type="submit" className="w-full" size="lg">
+          <GlassButton type="submit" className="w-full" size="lg" data-cy="login-submit">
             Ingresar
           </GlassButton>
           <button

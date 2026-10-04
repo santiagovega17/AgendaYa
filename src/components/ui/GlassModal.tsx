@@ -54,19 +54,23 @@ export function ModalActions({
   cancelLabel = "Cancelar",
   confirmLabel = "Confirmar",
   confirmVariant = "primary" as "primary" | "danger",
+  cancelDataCy,
+  confirmDataCy,
 }: {
   onCancel: () => void;
   onConfirm: () => void;
   cancelLabel?: string;
   confirmLabel?: string;
   confirmVariant?: "primary" | "danger";
+  cancelDataCy?: string;
+  confirmDataCy?: string;
 }) {
   return (
     <>
-      <GlassButton variant="ghost" onClick={onCancel}>
+      <GlassButton variant="ghost" onClick={onCancel} data-cy={cancelDataCy}>
         {cancelLabel}
       </GlassButton>
-      <GlassButton variant={confirmVariant} onClick={onConfirm}>
+      <GlassButton variant={confirmVariant} onClick={onConfirm} data-cy={confirmDataCy}>
         {confirmLabel}
       </GlassButton>
     </>

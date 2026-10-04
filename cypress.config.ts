@@ -8,6 +8,7 @@ export default defineConfig({
     video: false,
     screenshotOnRunFailure: true,
     screenshotsFolder: "cypress/screenshots",
+    trashAssetsBeforeRuns: false,
     defaultCommandTimeout: 10000,
   },
 });

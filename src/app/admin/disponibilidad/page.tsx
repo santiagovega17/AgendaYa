@@ -84,38 +84,45 @@ export default function DisponibilidadPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-cy="disponibilidad-page">
       <h1 className="text-2xl font-bold text-white">Disponibilidad</h1>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <GlassCard>
+        <GlassCard data-cy="horario-laboral-card">
           <div className="mb-4 flex items-center justify-between">
             <h2 className="font-semibold text-white">Horario laboral</h2>
-            <GlassButton size="sm" onClick={handleAddSchedule}>
+            <GlassButton size="sm" onClick={handleAddSchedule} data-cy="add-schedule">
               <Plus size={16} />
               Agregar
             </GlassButton>
           </div>
-          <div className="space-y-2">
+          <div className="space-y-2" data-cy="schedule-list">
             {weeklySchedules.length === 0 && (
-              <p className="text-sm text-white/50">No hay horarios configurados.</p>
+              <p className="text-sm text-white/50" data-cy="schedule-empty">
+                No hay horarios configurados.
+              </p>
             )}
             {weeklySchedules.map((sched) => {
               const dia = DIAS.find((d) => d.value === sched.diaSemana)?.label ?? "";
               return (
                 <div
                   key={sched.id}
+                  data-cy="schedule-item"
+                  data-cy-day={dia}
                   className="flex items-center justify-between rounded-xl border border-white/10 bg-white/5 px-4 py-3"
                 >
                   <div>
-                    <p className="text-sm font-medium text-white">{dia}</p>
-                    <p className="text-xs text-white/50">
+                    <p className="text-sm font-medium text-white" data-cy="schedule-day">
+                      {dia}
+                    </p>
+                    <p className="text-xs text-white/50" data-cy="schedule-range">
                       {sched.franjas.map((f) => `${f.inicio}–${f.fin}`).join(", ")} ·{" "}
                       {sched.tipo === "permanent" ? "Permanente" : "Única vez"}
                     </p>
                   </div>
                   <button
                     onClick={() => setDeleteModal(sched.id)}
+                    data-cy="delete-schedule"
                     className="text-white/40 hover:text-red-400"
                   >
                     <Trash2 size={16} />
@@ -126,10 +133,11 @@ export default function DisponibilidadPage() {
           </div>
         </GlassCard>
 
-        <GlassCard className="space-y-4">
+        <GlassCard className="space-y-4" data-cy="turno-settings-card">
           <h2 className="font-semibold text-white">Configuración de turnos</h2>
           <GlassSelect
             label="Intervalo entre turnos"
+            data-cy="setting-intervalo"
             value={String(localSettings.intervaloMin)}
             onChange={(e) =>
               setLocalSettings({ ...localSettings, intervaloMin: Number(e.target.value) })
@@ -140,6 +148,7 @@ export default function DisponibilidadPage() {
             label="Antelación mínima (horas)"
             type="number"
             min={0}
+            data-cy="setting-antelacion-min"
             value={localSettings.antelacionMinHoras}
             onChange={(e) =>
               setLocalSettings({ ...localSettings, antelacionMinHoras: Number(e.target.value) })
@@ -149,6 +158,7 @@ export default function DisponibilidadPage() {
             label="Antelación máxima (días)"
             type="number"
             min={1}
+            data-cy="setting-antelacion-max"
             value={localSettings.antelacionMaxDias}
             onChange={(e) =>
               setLocalSettings({ ...localSettings, antelacionMaxDias: Number(e.target.value) })
@@ -158,12 +168,15 @@ export default function DisponibilidadPage() {
             label="Límite de reservas por actividad/día"
             type="number"
             min={1}
+            data-cy="setting-limite-reservas"
             value={localSettings.limiteReservasDia}
             onChange={(e) =>
               setLocalSettings({ ...localSettings, limiteReservasDia: Number(e.target.value) })
             }
           />
-          <GlassButton onClick={saveSettings}>Guardar configuración</GlassButton>
+          <GlassButton onClick={saveSettings} data-cy="save-settings">
+            Guardar configuración
+          </GlassButton>
         </GlassCard>
       </div>
 
@@ -176,12 +189,15 @@ export default function DisponibilidadPage() {
             onCancel={() => setScheduleModal(false)}
             onConfirm={confirmSchedule}
             confirmLabel="Guardar"
+            cancelDataCy="cancel-schedule"
+            confirmDataCy="save-schedule"
           />
         }
       >
-        <div className="space-y-4">
+        <div className="space-y-4" data-cy="schedule-modal">
           <GlassSelect
             label="Día"
+            data-cy="schedule-day-select"
             value={String(scheduleForm.diaSemana)}
             onChange={(e) =>
               setScheduleForm({ ...scheduleForm, diaSemana: Number(e.target.value) })
@@ -192,18 +208,21 @@ export default function DisponibilidadPage() {
             <GlassInput
               label="Inicio"
               type="time"
+              data-cy="schedule-start"
               value={scheduleForm.inicio}
               onChange={(e) => setScheduleForm({ ...scheduleForm, inicio: e.target.value })}
             />
             <GlassInput
               label="Fin"
               type="time"
+              data-cy="schedule-end"
               value={scheduleForm.fin}
               onChange={(e) => setScheduleForm({ ...scheduleForm, fin: e.target.value })}
             />
           </div>
           <GlassSelect
             label="Tipo"
+            data-cy="schedule-type"
             value={scheduleForm.tipo}
             onChange={(e) =>
               setScheduleForm({
@@ -220,6 +239,7 @@ export default function DisponibilidadPage() {
             <GlassInput
               label="Fecha"
               type="date"
+              data-cy="schedule-once-date"
               value={scheduleForm.fechaInicio}
               onChange={(e) =>
                 setScheduleForm({ ...scheduleForm, fechaInicio: e.target.value })

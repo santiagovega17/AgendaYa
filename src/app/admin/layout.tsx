@@ -59,6 +59,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <Link
               key={href}
               href={href}
+              data-cy={`nav-${label.toLowerCase()}`}
               className={cn(
                 "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
                 pathname === href

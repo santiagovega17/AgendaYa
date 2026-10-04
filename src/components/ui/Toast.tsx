@@ -43,12 +43,16 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
         {toasts.map((t) => (
           <div
             key={t.id}
+            data-cy="toast"
+            data-cy-type={t.type}
             className={cn(
               "flex items-center gap-3 rounded-xl border px-4 py-3 shadow-lg backdrop-blur-xl",
               colors[t.type]
             )}
           >
-            <span className="text-sm">{t.message}</span>
+            <span className="text-sm" data-cy="toast-message">
+              {t.message}
+            </span>
             <button onClick={() => dismiss(t.id)} className="opacity-60 hover:opacity-100">
               <X size={16} />
             </button>
