@@ -281,6 +281,36 @@ describe("generateSlots", () => {
     expect(slots).toEqual([]);
   });
 
+  it("muestra deshabilitados (vencidos) los horarios de hoy que ya pasaron (AYA-M04-RF06)", () => {
+    const slots = generateSlots(
+      baseParams({
+        settings: { ...settings, antelacionMinHoras: 0 },
+        now: new Date(2026, 5, 17, 9, 30),
+      })
+    );
+
+    expect(slots.map((s) => s.horaInicio)).toEqual(["09:00", "09:40", "10:20", "11:00"]);
+    expect(slots[0]).toMatchObject({ horaInicio: "09:00", disponible: false, vencido: true });
+    expect(slots.slice(1).every((s) => s.disponible && !s.vencido)).toBe(true);
+  });
+
+  it("no cuenta como disponible un día cuyos horarios ya vencieron todos", () => {
+    const dates = getAvailableDates({
+      year: 2026,
+      month: 5,
+      eventType,
+      weeklySchedules: wednesdaySchedule,
+      blockedDates: [],
+      bookings: [],
+      settings: { ...settings, antelacionMinHoras: 0 },
+      locks: [],
+      now: new Date(2026, 5, 17, 13, 0),
+    });
+
+    expect(dates).not.toContain("2026-06-17");
+    expect(dates).toContain("2026-06-24");
+  });
+
   it("no genera slots en días sin horario configurado para ese día de la semana", () => {
     const slots = generateSlots(
       baseParams({

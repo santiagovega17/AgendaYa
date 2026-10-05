@@ -1,198 +1,210 @@
 "use client";
 
-import { useState } from "react";
-import { Pencil, Plus, Trash2, ToggleLeft, ToggleRight } from "lucide-react";
-import { GlassCard } from "@/components/ui/GlassCard";
-import { GlassButton } from "@/components/ui/GlassButton";
-import { GlassInput } from "@/components/ui/GlassInput";
-import { GlassTextarea } from "@/components/ui/GlassTextarea";
-import { GlassSelect } from "@/components/ui/GlassSelect";
-import { GlassModal, ModalActions } from "@/components/ui/GlassModal";
+import { Suspense, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Clock, MapPin, MoreVertical, Pencil, Plus, Tags, Trash2 } from "lucide-react";
+import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { EventTypeSheet } from "@/components/admin/EventTypeSheet";
+import { EmptyState } from "@/components/common/EmptyState";
+import { PageHeader } from "@/components/common/PageHeader";
+import { MODALIDAD_LABEL } from "@/lib/format";
+import { cn } from "@/lib/utils/cn";
+import type { EventType } from "@/lib/types";
 import { useAgendaStore } from "@/store/useAgendaStore";
-import { useToast } from "@/components/ui/Toast";
-import type { EventType, Modality } from "@/lib/types";
 
-const emptyForm = {
-  nombre: "",
-  duracionMin: 30,
-  modalidad: "presencial" as Modality,
-  confirmacionAuto: true,
-  descripcion: "",
-};
-
-export default function EventosPage() {
+function EventosContent() {
+  const params = useSearchParams();
+  const router = useRouter();
   const eventTypes = useAgendaStore((s) => s.eventTypes);
-  const addEventType = useAgendaStore((s) => s.addEventType);
-  const updateEventType = useAgendaStore((s) => s.updateEventType);
   const toggleEventType = useAgendaStore((s) => s.toggleEventType);
   const deleteEventType = useAgendaStore((s) => s.deleteEventType);
-  const { toast } = useToast();
 
-  const [modalOpen, setModalOpen] = useState(false);
+  const wantsNew = params.get("nuevo") === "1";
+  const [sheetOpen, setSheetOpen] = useState(false);
   const [editing, setEditing] = useState<EventType | null>(null);
-  const [form, setForm] = useState(emptyForm);
-  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState<EventType | null>(null);
 
   const openCreate = () => {
     setEditing(null);
-    setForm(emptyForm);
-    setModalOpen(true);
+    setSheetOpen(true);
   };
-
   const openEdit = (evt: EventType) => {
     setEditing(evt);
-    setForm({
-      nombre: evt.nombre,
-      duracionMin: evt.duracionMin,
-      modalidad: evt.modalidad,
-      confirmacionAuto: evt.confirmacionAuto,
-      descripcion: evt.descripcion,
+    setSheetOpen(true);
+  };
+  const onSheetChange = (open: boolean) => {
+    setSheetOpen(open);
+    if (!open && wantsNew) router.replace("/admin/eventos");
+  };
+
+  const handleToggle = async (evt: EventType) => {
+    const r = await toggleEventType(evt.id);
+    if (!r.ok) toast.error(r.error);
+    else toast.success(evt.activo ? `"${evt.nombre}" desactivado` : `"${evt.nombre}" activado`, {
+      description: evt.activo ? "Ya no se puede reservar." : "Ya se puede reservar desde tu enlace.",
     });
-    setModalOpen(true);
   };
 
-  const handleSave = () => {
-    if (!form.nombre.trim()) {
-      toast("El nombre es obligatorio.", "error");
-      return;
-    }
-    if (form.duracionMin <= 0) {
-      toast("La duración debe ser mayor a 0.", "error");
-      return;
-    }
-    const duplicate = eventTypes.some(
-      (e) => e.nombre.toLowerCase() === form.nombre.toLowerCase() && e.id !== editing?.id
-    );
-    if (duplicate) {
-      toast("Ya existe un evento con ese nombre.", "error");
-      return;
-    }
-
-    if (editing) {
-      updateEventType(editing.id, { ...form, activo: editing.activo });
-      toast("Evento actualizado.", "success");
-    } else {
-      addEventType({ ...form, activo: true });
-      toast("Evento creado.", "success");
-    }
-    setModalOpen(false);
+  const handleDelete = async () => {
+    if (!deleting) return;
+    const r = await deleteEventType(deleting.id);
+    if (r.ok) toast.success("Evento eliminado");
+    else toast.error(r.error);
+    setDeleting(null);
   };
 
-  const handleDelete = () => {
-    if (!deleteId) return;
-    const ok = deleteEventType(deleteId);
-    if (ok) {
-      toast("Evento eliminado.", "success");
-    } else {
-      toast("No se puede eliminar: tiene reservas asociadas.", "error");
-    }
-    setDeleteId(null);
-  };
+  const activos = eventTypes.filter((e) => e.activo).length;
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-white">Tipos de evento</h1>
-        <GlassButton onClick={openCreate}>
-          <Plus size={18} />
-          Nuevo evento
-        </GlassButton>
-      </div>
-
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {eventTypes.map((evt) => (
-          <GlassCard key={evt.id} className="flex flex-col gap-3">
-            <div className="flex items-start justify-between">
-              <div>
-                <h3 className="font-semibold text-white">{evt.nombre}</h3>
-                <p className="text-sm text-white/50">{evt.duracionMin} min · {evt.modalidad}</p>
-              </div>
-              <button onClick={() => toggleEventType(evt.id)} className="text-white/60">
-                {evt.activo ? <ToggleRight className="text-emerald-400" /> : <ToggleLeft />}
-              </button>
-            </div>
-            <p className="flex-1 text-sm text-white/60">{evt.descripcion}</p>
-            <div className="flex gap-2">
-              <GlassButton variant="secondary" size="sm" onClick={() => openEdit(evt)}>
-                <Pencil size={14} />
-                Editar
-              </GlassButton>
-              <GlassButton variant="ghost" size="sm" onClick={() => setDeleteId(evt.id)}>
-                <Trash2 size={14} />
-              </GlassButton>
-            </div>
-          </GlassCard>
-        ))}
-      </div>
-
-      <GlassModal
-        open={modalOpen}
-        onClose={() => setModalOpen(false)}
-        title={editing ? "Editar evento" : "Nuevo evento"}
-        footer={
-          <ModalActions
-            onCancel={() => setModalOpen(false)}
-            onConfirm={handleSave}
-            confirmLabel="Guardar"
-          />
+      <PageHeader
+        title="Tipos de evento"
+        description={
+          eventTypes.length === 0
+            ? "Lo que tus invitados pueden reservar."
+            : `${activos} de ${eventTypes.length} ${eventTypes.length === 1 ? "activo" : "activos"} en tu enlace público.`
         }
-      >
-        <div className="space-y-4">
-          <GlassInput
-            label="Nombre"
-            value={form.nombre}
-            onChange={(e) => setForm({ ...form, nombre: e.target.value })}
-          />
-          <GlassInput
-            label="Duración (minutos)"
-            type="number"
-            min={1}
-            value={form.duracionMin}
-            onChange={(e) => setForm({ ...form, duracionMin: Number(e.target.value) })}
-          />
-          <GlassSelect
-            label="Modalidad"
-            value={form.modalidad}
-            onChange={(e) => setForm({ ...form, modalidad: e.target.value as Modality })}
-            options={[
-              { value: "presencial", label: "Presencial" },
-              { value: "virtual", label: "Virtual" },
-              { value: "ambas", label: "Ambas" },
-            ]}
-          />
-          <GlassSelect
-            label="Confirmación"
-            value={form.confirmacionAuto ? "auto" : "manual"}
-            onChange={(e) => setForm({ ...form, confirmacionAuto: e.target.value === "auto" })}
-            options={[
-              { value: "auto", label: "Automática" },
-              { value: "manual", label: "Manual" },
-            ]}
-          />
-          <GlassTextarea
-            label="Descripción"
-            value={form.descripcion}
-            onChange={(e) => setForm({ ...form, descripcion: e.target.value })}
-          />
+        actions={
+          eventTypes.length > 0 && (
+            <Button onClick={openCreate}>
+              <Plus aria-hidden="true" />
+              Nuevo evento
+            </Button>
+          )
+        }
+      />
+
+      {eventTypes.length === 0 ? (
+        <EmptyState
+          icon={Tags}
+          title="Todavía no creaste tipos de evento"
+          description="Creá al menos uno, por ejemplo una consulta de 30 minutos, para que tus invitados puedan reservar."
+          action={
+            <Button onClick={openCreate}>
+              <Plus aria-hidden="true" />
+              Crear mi primer evento
+            </Button>
+          }
+          className="py-16"
+        />
+      ) : (
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {eventTypes.map((evt) => {
+            const switchId = `activo-${evt.id}`;
+            return (
+              <Card key={evt.id} className={cn("transition-opacity", !evt.activo && "opacity-75")}>
+                <CardHeader>
+                  <CardTitle className="text-lg">{evt.nombre}</CardTitle>
+                  <CardDescription className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                    <span className="flex items-center gap-1">
+                      <Clock className="size-3.5" aria-hidden="true" />
+                      {evt.duracionMin} min
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <MapPin className="size-3.5" aria-hidden="true" />
+                      {MODALIDAD_LABEL[evt.modalidad]}
+                    </span>
+                  </CardDescription>
+                  <CardAction>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon-sm" aria-label={`Acciones de ${evt.nombre}`}>
+                          <MoreVertical aria-hidden="true" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onSelect={() => openEdit(evt)}>
+                          <Pencil aria-hidden="true" />
+                          Editar
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem variant="destructive" onSelect={() => setDeleting(evt)}>
+                          <Trash2 aria-hidden="true" />
+                          Eliminar
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </CardAction>
+                </CardHeader>
+                <CardContent className="flex-1 space-y-3">
+                  {!evt.confirmacionAuto && <Badge variant="warning">Requiere aprobación</Badge>}
+                  <p className="line-clamp-3 text-sm text-muted-foreground">
+                    {evt.descripcion || "Sin descripción."}
+                  </p>
+                </CardContent>
+                <CardFooter className="justify-between border-t">
+                  <Label htmlFor={switchId} className="cursor-pointer font-normal">
+                    {evt.activo ? "Visible para reservar" : "Oculto"}
+                  </Label>
+                  <Switch id={switchId} checked={evt.activo} onCheckedChange={() => handleToggle(evt)} />
+                </CardFooter>
+              </Card>
+            );
+          })}
+
+          <button
+            type="button"
+            onClick={openCreate}
+            className="flex min-h-48 flex-col items-center justify-center gap-2 rounded-xl border border-dashed text-muted-foreground transition-colors hover:border-primary hover:text-primary"
+          >
+            <Plus className="size-6" aria-hidden="true" />
+            <span className="font-medium">Nuevo tipo de evento</span>
+          </button>
         </div>
-      </GlassModal>
+      )}
 
-      <GlassModal
-        open={!!deleteId}
-        onClose={() => setDeleteId(null)}
-        title="Eliminar evento"
-        variant="critical"
-        footer={
-          <ModalActions
-            onCancel={() => setDeleteId(null)}
-            onConfirm={handleDelete}
-            confirmLabel="Eliminar"
-            confirmVariant="danger"
-          />
-        }
-      >
-        <p>¿Estás seguro de que querés eliminar este tipo de evento?</p>
-      </GlassModal>
+      <EventTypeSheet
+        open={sheetOpen || wantsNew}
+        editing={wantsNew ? null : editing}
+        onOpenChange={onSheetChange}
+      />
+
+      <AlertDialog open={!!deleting} onOpenChange={(o) => !o && setDeleting(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Eliminar &quot;{deleting?.nombre}&quot;?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Si tiene reservas registradas no se puede eliminar; en ese caso desactivalo para que no se pueda reservar.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Volver</AlertDialogCancel>
+            <AlertDialogAction variant="destructive" onClick={handleDelete}>
+              Eliminar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
+  );
+}
+
+export default function EventosPage() {
+  return (
+    <Suspense>
+      <EventosContent />
+    </Suspense>
   );
 }
