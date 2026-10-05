@@ -1,7 +1,3 @@
 export default function BookingLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="mx-auto min-h-screen w-full max-w-[430px] px-4 py-6">
-      {children}
-    </div>
-  );
+  return <div className="mx-auto min-h-dvh w-full max-w-md px-4 pt-6 pb-32">{children}</div>;
 }

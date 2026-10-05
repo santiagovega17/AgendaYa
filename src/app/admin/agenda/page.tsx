@@ -1,304 +1,273 @@
 "use client";
 
-import { useState } from "react";
-import { format, parse } from "date-fns";
-import { es } from "date-fns/locale";
-import { Calendar, List, Check, X, RefreshCw } from "lucide-react";
-import { GlassCard } from "@/components/ui/GlassCard";
-import { GlassButton } from "@/components/ui/GlassButton";
-import { GlassBadge } from "@/components/ui/GlassBadge";
-import { GlassSelect } from "@/components/ui/GlassSelect";
-import { GlassModal, ModalActions } from "@/components/ui/GlassModal";
-import { MonthCalendar } from "@/components/admin/MonthCalendar";
+import { Suspense, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { startOfWeek } from "date-fns";
+import { CalendarDays, CalendarRange, List, Search, X } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { AdminMonthCalendar, CalendarLegend } from "@/components/admin/AdminMonthCalendar";
+import { BookingDetailSheet, useBookingActions } from "@/components/admin/BookingDetailSheet";
+import { BookingList } from "@/components/admin/agenda/BookingList";
+import { WeekView } from "@/components/admin/agenda/WeekView";
+import { PageHeader } from "@/components/common/PageHeader";
+import { formatFechaCompacta, formatFechaLarga, parseFecha, toFechaStr } from "@/lib/format";
+import type { BookingStatus } from "@/lib/types";
 import { useAgendaStore } from "@/store/useAgendaStore";
-import { useToast } from "@/components/ui/Toast";
-import { generateSlots } from "@/lib/availability/generateSlots";
-import type { Booking } from "@/lib/types";
 
-export default function AgendaPage() {
+type Periodo = "proximas" | "pasadas" | "todas";
+const ESTADOS: { value: BookingStatus | "all"; label: string }[] = [
+  { value: "all", label: "Todos los estados" },
+  { value: "pendiente", label: "Pendientes" },
+  { value: "confirmada", label: "Confirmadas" },
+  { value: "completada", label: "Completadas" },
+  { value: "cancelada", label: "Canceladas" },
+];
+
+function AgendaContent() {
+  const params = useSearchParams();
   const bookings = useAgendaStore((s) => s.bookings);
   const eventTypes = useAgendaStore((s) => s.eventTypes);
-  const weeklySchedules = useAgendaStore((s) => s.weeklySchedules);
   const blockedDates = useAgendaStore((s) => s.blockedDates);
-  const settings = useAgendaStore((s) => s.settings);
-  const slotLocks = useAgendaStore((s) => s.slotLocks);
-  const cancelBooking = useAgendaStore((s) => s.cancelBooking);
-  const completeBooking = useAgendaStore((s) => s.completeBooking);
-  const rescheduleBooking = useAgendaStore((s) => s.rescheduleBooking);
-  const { toast } = useToast();
+  const { approve } = useBookingActions();
 
-  const [view, setView] = useState<"list" | "calendar">("list");
-  const [filterStatus, setFilterStatus] = useState<string>("all");
-  const [currentMonth, setCurrentMonth] = useState(new Date());
-  const [rescheduleTarget, setRescheduleTarget] = useState<Booking | null>(null);
-  const [newSlot, setNewSlot] = useState({ fecha: "", horaInicio: "", horaFin: "" });
-  const [cancelTarget, setCancelTarget] = useState<string | null>(null);
+  const initialEstado = ESTADOS.some((e) => e.value === params.get("estado"))
+    ? (params.get("estado") as BookingStatus)
+    : "all";
 
-  const filtered = bookings.filter((b) => {
-    if (filterStatus === "all") return true;
-    return b.estado === filterStatus;
-  });
+  const [tab, setTab] = useState("lista");
+  const [query, setQuery] = useState("");
+  const [estado, setEstado] = useState<BookingStatus | "all">(initialEstado);
+  const [evento, setEvento] = useState("all");
+  const [periodo, setPeriodo] = useState<Periodo>("proximas");
+  const [dia, setDia] = useState<string | null>(null);
+  const [detailId, setDetailId] = useState<string | null>(null);
+  const [weekStart, setWeekStart] = useState(() => startOfWeek(new Date(), { weekStartsOn: 1 }));
+  const [month, setMonth] = useState(() => new Date());
+  const [monthDay, setMonthDay] = useState(() => toFechaStr(new Date()));
 
-  const bookingDates = filtered
-    .filter((b) => b.estado !== "cancelada")
-    .map((b) => b.fecha);
-
-  const openReschedule = (booking: Booking) => {
-    setRescheduleTarget(booking);
-    setNewSlot({ fecha: booking.fecha, horaInicio: booking.horaInicio, horaFin: booking.horaFin });
-  };
-
-  const getSlotsForReschedule = () => {
-    if (!rescheduleTarget || !newSlot.fecha) return [];
-    const evt = eventTypes.find((e) => e.id === rescheduleTarget.eventTypeId);
-    if (!evt) return [];
-    return generateSlots({
-      fecha: newSlot.fecha,
-      eventType: evt,
-      weeklySchedules,
-      blockedDates,
-      bookings: bookings.filter((b) => b.id !== rescheduleTarget.id),
-      settings,
-      locks: slotLocks,
-    }).filter((s) => s.disponible);
-  };
-
-  const confirmReschedule = () => {
-    if (!rescheduleTarget) return;
-    const ok = rescheduleBooking(
-      rescheduleTarget.id,
-      newSlot.fecha,
-      newSlot.horaInicio,
-      newSlot.horaFin
-    );
-    if (ok) {
-      toast("Reserva reagendada.", "success");
-      setRescheduleTarget(null);
-    } else {
-      toast("El horario seleccionado no está disponible.", "error");
+  const today = toFechaStr(new Date());
+  const blocked = useMemo(() => new Set(blockedDates.map((b) => b.fecha)), [blockedDates]);
+  const bookingCounts = useMemo(() => {
+    const m = new Map<string, number>();
+    for (const b of bookings) {
+      if (b.estado === "pendiente" || b.estado === "confirmada") m.set(b.fecha, (m.get(b.fecha) ?? 0) + 1);
     }
+    return m;
+  }, [bookings]);
+  const pendientesCount = bookings.filter((b) => b.estado === "pendiente").length;
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    const list = bookings.filter((b) => {
+      if (estado !== "all" && b.estado !== estado) return false;
+      if (evento !== "all" && b.eventTypeId !== evento) return false;
+      if (dia) {
+        if (b.fecha !== dia) return false;
+      } else if (periodo === "proximas" && b.fecha < today) return false;
+      else if (periodo === "pasadas" && b.fecha >= today) return false;
+      if (!q) return true;
+      return [b.invitado.nombre, b.invitado.apellido, b.invitado.email, b.numeroReserva]
+        .join(" ")
+        .toLowerCase()
+        .includes(q);
+    });
+    const key = (b: (typeof list)[number]) => `${b.fecha} ${b.horaInicio}`;
+    return list.sort((a, b) =>
+      periodo === "pasadas" && !dia ? key(b).localeCompare(key(a)) : key(a).localeCompare(key(b))
+    );
+  }, [bookings, estado, evento, periodo, dia, query, today]);
+
+  const hasFilters = query || estado !== "all" || evento !== "all" || dia;
+  const clearFilters = () => {
+    setQuery("");
+    setEstado("all");
+    setEvento("all");
+    setDia(null);
   };
 
-  const confirmCancel = () => {
-    if (!cancelTarget) return;
-    cancelBooking(cancelTarget);
-    toast("Reserva cancelada. Se notificó al invitado.", "info");
-    setCancelTarget(null);
+  const pickDay = (fecha: string) => {
+    setDia(fecha);
+    setTab("lista");
   };
+
+  const delMes = bookings
+    .filter((b) => b.fecha === monthDay && b.estado !== "cancelada")
+    .sort((a, b) => a.horaInicio.localeCompare(b.horaInicio));
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <h1 className="text-2xl font-bold text-white">Agenda y reservas</h1>
-        <div className="flex gap-2">
-          <GlassButton
-            variant={view === "list" ? "primary" : "secondary"}
-            size="sm"
-            onClick={() => setView("list")}
-          >
-            <List size={16} />
+      <PageHeader
+        title="Agenda"
+        description={
+          pendientesCount > 0
+            ? `Tenés ${pendientesCount} ${pendientesCount === 1 ? "reserva pendiente" : "reservas pendientes"} de aprobar.`
+            : "Todas tus reservas en un solo lugar."
+        }
+      />
+
+      <Tabs value={tab} onValueChange={setTab} className="gap-4">
+        <TabsList className="w-full sm:w-auto sm:self-start">
+          <TabsTrigger value="lista" className="flex-1 sm:flex-none">
+            <List aria-hidden="true" />
             Lista
-          </GlassButton>
-          <GlassButton
-            variant={view === "calendar" ? "primary" : "secondary"}
-            size="sm"
-            onClick={() => setView("calendar")}
-          >
-            <Calendar size={16} />
-            Calendario
-          </GlassButton>
-        </div>
-      </div>
+          </TabsTrigger>
+          <TabsTrigger value="semana" className="flex-1 sm:flex-none">
+            <CalendarRange aria-hidden="true" />
+            Semana
+          </TabsTrigger>
+          <TabsTrigger value="mes" className="flex-1 sm:flex-none">
+            <CalendarDays aria-hidden="true" />
+            Mes
+          </TabsTrigger>
+        </TabsList>
 
-      {view === "list" ? (
-        <GlassCard>
-          <div className="mb-4">
-            <GlassSelect
-              label="Filtrar por estado"
-              value={filterStatus}
-              onChange={(e) => setFilterStatus(e.target.value)}
-              options={[
-                { value: "all", label: "Todos" },
-                { value: "pendiente", label: "Pendiente" },
-                { value: "confirmada", label: "Confirmada" },
-                { value: "completada", label: "Completada" },
-                { value: "cancelada", label: "Cancelada" },
-              ]}
-            />
+        <TabsContent value="lista" className="space-y-4">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
+            <div className="relative lg:max-w-xs lg:flex-1">
+              <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
+              <Input
+                type="search"
+                placeholder="Buscar por nombre, email o Nº"
+                aria-label="Buscar reservas"
+                className="pl-9"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:flex">
+              <Select value={estado} onValueChange={(v) => setEstado(v as BookingStatus | "all")}>
+                <SelectTrigger className="w-full lg:w-44" aria-label="Filtrar por estado">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {ESTADOS.map((e) => (
+                    <SelectItem key={e.value} value={e.value}>
+                      {e.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select value={evento} onValueChange={setEvento}>
+                <SelectTrigger
+                  className="order-first col-span-2 w-full sm:order-none sm:col-span-1 lg:w-48"
+                  aria-label="Filtrar por tipo de evento"
+                >
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos los eventos</SelectItem>
+                  {eventTypes.map((e) => (
+                    <SelectItem key={e.id} value={e.id}>
+                      {e.nombre}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select value={periodo} onValueChange={(v) => setPeriodo(v as Periodo)} disabled={!!dia}>
+                <SelectTrigger className="w-full lg:w-36" aria-label="Período">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="proximas">Próximas</SelectItem>
+                  <SelectItem value="pasadas">Pasadas</SelectItem>
+                  <SelectItem value="todas">Todas</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
-              <thead>
-                <tr className="border-b border-white/10 text-white/50">
-                  <th className="pb-3 pr-4">Nº</th>
-                  <th className="pb-3 pr-4">Fecha</th>
-                  <th className="pb-3 pr-4">Hora</th>
-                  <th className="pb-3 pr-4">Evento</th>
-                  <th className="pb-3 pr-4">Invitado</th>
-                  <th className="pb-3 pr-4">Estado</th>
-                  <th className="pb-3">Acciones</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.map((b) => {
-                  const evt = eventTypes.find((e) => e.id === b.eventTypeId);
-                  return (
-                    <tr key={b.id} className="border-b border-white/5">
-                      <td className="py-3 pr-4 text-white/80">{b.numeroReserva}</td>
-                      <td className="py-3 pr-4 text-white/80">
-                        {format(parse(b.fecha, "yyyy-MM-dd", new Date()), "d MMM yyyy", {
-                          locale: es,
-                        })}
-                      </td>
-                      <td className="py-3 pr-4 text-white/80">{b.horaInicio}</td>
-                      <td className="py-3 pr-4 text-white/80">{evt?.nombre}</td>
-                      <td className="py-3 pr-4 text-white/80">
-                        {b.invitado.nombre} {b.invitado.apellido}
-                      </td>
-                      <td className="py-3 pr-4">
-                        <GlassBadge status={b.estado} />
-                      </td>
-                      <td className="py-3">
-                        {b.estado !== "cancelada" && b.estado !== "completada" && (
-                          <div className="flex gap-1">
-                            <button
-                              onClick={() => openReschedule(b)}
-                              className="rounded p-1 text-white/50 hover:bg-white/10 hover:text-white"
-                              title="Reagendar"
-                            >
-                              <RefreshCw size={16} />
-                            </button>
-                            <button
-                              onClick={() => completeBooking(b.id)}
-                              className="rounded p-1 text-white/50 hover:bg-white/10 hover:text-emerald-400"
-                              title="Completar"
-                            >
-                              <Check size={16} />
-                            </button>
-                            <button
-                              onClick={() => setCancelTarget(b.id)}
-                              className="rounded p-1 text-white/50 hover:bg-white/10 hover:text-red-400"
-                              title="Cancelar"
-                            >
-                              <X size={16} />
-                            </button>
-                          </div>
-                        )}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-            {filtered.length === 0 && (
-              <p className="py-8 text-center text-white/50">No hay reservas.</p>
-            )}
-          </div>
-        </GlassCard>
-      ) : (
-        <GlassCard>
-          <MonthCalendar
-            currentMonth={currentMonth}
-            onMonthChange={setCurrentMonth}
-            getDayStatus={(dateStr) =>
-              bookingDates.includes(dateStr) ? "has-bookings" : "available"
-            }
-          />
-          <div className="mt-4 space-y-2">
-            {filtered
-              .filter((b) => b.estado !== "cancelada")
-              .map((b) => {
-                const evt = eventTypes.find((e) => e.id === b.eventTypeId);
-                return (
-                  <div
-                    key={b.id}
-                    className="flex items-center justify-between rounded-lg border border-white/10 bg-white/5 px-4 py-2"
+
+          {(dia || hasFilters) && (
+            <div className="flex flex-wrap items-center gap-2">
+              {dia && (
+                <Badge variant="info" className="gap-1 py-1 pr-1 pl-2.5 text-sm">
+                  {formatFechaLarga(dia)}
+                  <button
+                    type="button"
+                    onClick={() => setDia(null)}
+                    className="rounded-full p-0.5 hover:bg-black/10"
+                    aria-label="Quitar filtro de día"
                   >
-                    <div>
-                      <span className="text-sm text-white">
-                        {b.fecha} {b.horaInicio} — {evt?.nombre}
-                      </span>
-                      <p className="text-xs text-white/50">
-                        {b.invitado.nombre} {b.invitado.apellido}
-                      </p>
-                    </div>
-                    <GlassBadge status={b.estado} />
-                  </div>
-                );
-              })}
+                    <X className="size-3.5" aria-hidden="true" />
+                  </button>
+                </Badge>
+              )}
+              <Button variant="link" size="sm" className="h-auto px-0" onClick={clearFilters}>
+                Limpiar filtros
+              </Button>
+              <span className="ml-auto text-sm text-muted-foreground" aria-live="polite">
+                {filtered.length} {filtered.length === 1 ? "resultado" : "resultados"}
+              </span>
+            </div>
+          )}
+
+          <BookingList bookings={filtered} eventTypes={eventTypes} onOpen={setDetailId} onApprove={approve} />
+        </TabsContent>
+
+        <TabsContent value="semana">
+          <WeekView
+            weekStart={weekStart}
+            onWeekChange={setWeekStart}
+            bookings={bookings}
+            eventTypes={eventTypes}
+            blocked={blocked}
+            onOpen={setDetailId}
+            onPickDay={pickDay}
+          />
+        </TabsContent>
+
+        <TabsContent value="mes">
+          <div className="grid gap-6 lg:grid-cols-5">
+            <Card className="lg:col-span-3">
+              <CardContent className="space-y-4">
+                <AdminMonthCalendar
+                  mode="single"
+                  month={month}
+                  onMonthChange={setMonth}
+                  selected={parseFecha(monthDay)}
+                  onSelect={(d) => d && setMonthDay(toFechaStr(d))}
+                  bookingCounts={bookingCounts}
+                  blocked={blocked}
+                />
+                <CalendarLegend />
+              </CardContent>
+            </Card>
+            <Card className="lg:col-span-2">
+              <CardHeader>
+                <CardTitle>{formatFechaLarga(monthDay)}</CardTitle>
+                <CardDescription>
+                  {delMes.length} {delMes.length === 1 ? "reserva" : "reservas"}
+                  {blocked.has(monthDay) && " · día bloqueado"}
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <BookingList
+                  bookings={delMes}
+                  eventTypes={eventTypes}
+                  onOpen={setDetailId}
+                  onApprove={approve}
+                  cardsOnly
+                  emptyText={`No hay reservas para el ${formatFechaCompacta(monthDay).toLowerCase()}.`}
+                />
+              </CardContent>
+            </Card>
           </div>
-        </GlassCard>
-      )}
+        </TabsContent>
+      </Tabs>
 
-      <GlassModal
-        open={!!rescheduleTarget}
-        onClose={() => setRescheduleTarget(null)}
-        title="Reagendar reserva"
-        footer={
-          <ModalActions
-            onCancel={() => setRescheduleTarget(null)}
-            onConfirm={confirmReschedule}
-            confirmLabel="Reagendar"
-          />
-        }
-      >
-        <div className="space-y-4">
-          <GlassSelect
-            label="Fecha"
-            value={newSlot.fecha}
-            onChange={(e) => setNewSlot({ ...newSlot, fecha: e.target.value })}
-            options={[
-              { value: "", label: "Seleccionar..." },
-              ...getSlotsForReschedule().reduce<{ value: string; label: string }[]>(
-                (acc, s) => {
-                  if (!acc.find((a) => a.value === s.fecha)) {
-                    acc.push({ value: s.fecha, label: s.fecha });
-                  }
-                  return acc;
-                },
-                []
-              ),
-            ]}
-          />
-          <GlassSelect
-            label="Horario"
-            value={newSlot.horaInicio}
-            onChange={(e) => {
-              const slot = getSlotsForReschedule().find((s) => s.horaInicio === e.target.value);
-              if (slot) {
-                setNewSlot({
-                  fecha: slot.fecha,
-                  horaInicio: slot.horaInicio,
-                  horaFin: slot.horaFin,
-                });
-              }
-            }}
-            options={[
-              { value: "", label: "Seleccionar..." },
-              ...getSlotsForReschedule()
-                .filter((s) => s.fecha === newSlot.fecha)
-                .map((s) => ({ value: s.horaInicio, label: s.horaInicio })),
-            ]}
-          />
-        </div>
-      </GlassModal>
-
-      <GlassModal
-        open={!!cancelTarget}
-        onClose={() => setCancelTarget(null)}
-        title="Cancelar reserva"
-        variant="critical"
-        footer={
-          <ModalActions
-            onCancel={() => setCancelTarget(null)}
-            onConfirm={confirmCancel}
-            confirmLabel="Cancelar reserva"
-            confirmVariant="danger"
-          />
-        }
-      >
-        <p>¿Confirmás la cancelación? Se notificará al invitado.</p>
-      </GlassModal>
+      <BookingDetailSheet bookingId={detailId} onOpenChange={(o) => !o && setDetailId(null)} />
     </div>
+  );
+}
+
+export default function AgendaPage() {
+  return (
+    <Suspense>
+      <AgendaContent />
+    </Suspense>
   );
 }

@@ -1,8 +1,9 @@
-import { addMinutes, format, parse, isBefore, isAfter, addHours, addDays } from "date-fns";
+import { format, parse, isBefore, isAfter, addHours, addDays } from "date-fns";
 import type {
   Booking,
   BookingSettings,
   BlockedDate,
+  BusyRange,
   EventType,
   Slot,
   SlotLock,
@@ -120,6 +121,7 @@ export function generateSlots(params: {
       const id = makeSlotId(fecha, horaInicio, eventType.id);
 
       if (isBefore(slotStart, minDate)) {
+        slots.push({ id, fecha, horaInicio, horaFin, disponible: false, vencido: true });
         current += step;
         continue;
       }
@@ -157,6 +159,26 @@ export function generateSlots(params: {
   }
 
   return slots;
+}
+
+/**
+ * Marca como no disponibles los slots que se superponen con reservas o bloqueos
+ * ajenos de cualquier tipo de evento: el administrador no puede atender dos citas a la vez.
+ */
+export function markOverlappingSlots(slots: Slot[], busy: BusyRange[]): Slot[] {
+  return slots.map((slot) => {
+    if (!slot.disponible) return slot;
+    const start = toMinutes(slot.horaInicio);
+    const end = toMinutes(slot.horaFin);
+    const overlaps = busy.some(
+      (b) =>
+        !b.propio &&
+        b.fecha === slot.fecha &&
+        toMinutes(b.horaInicio) < end &&
+        toMinutes(b.horaFin) > start
+    );
+    return overlaps ? { ...slot, disponible: false } : slot;
+  });
 }
 
 export function getAvailableDates(params: {

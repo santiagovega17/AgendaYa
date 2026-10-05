@@ -5,6 +5,7 @@ export type NotificationType =
   | "reserva_confirmada"
   | "reserva_cancelada"
   | "reserva_pendiente"
+  | "reserva_reagendada"
   | "recordatorio"
   | "bloqueo_dia";
 
@@ -88,6 +89,8 @@ export interface Slot {
   horaInicio: string;
   horaFin: string;
   disponible: boolean;
+  /** El horario ya pasó o no cumple la antelación mínima (AYA-M04-RF06). */
+  vencido?: boolean;
   lockExpiresAt?: string;
   lockedBySession?: string;
 }
@@ -101,15 +104,9 @@ export interface Notification {
   createdAt: string;
 }
 
-export interface AgendaState {
-  profile: AdminProfile;
-  eventTypes: EventType[];
-  weeklySchedules: WeeklySchedule[];
-  blockedDates: BlockedDate[];
-  settings: BookingSettings;
-  bookings: Booking[];
-  slotLocks: SlotLock[];
-  notifications: Notification[];
-  isAuthenticated: boolean;
-  scheduleVersion: number;
+export interface BusyRange {
+  fecha: string;
+  horaInicio: string;
+  horaFin: string;
+  propio: boolean;
 }
