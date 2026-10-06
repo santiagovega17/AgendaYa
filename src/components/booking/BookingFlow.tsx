@@ -55,13 +55,17 @@ type Dialog = { title: string; description: string } | null;
 function InfoDialog({ dialog, onClose }: { dialog: Dialog; onClose: () => void }) {
   return (
     <AlertDialog open={!!dialog} onOpenChange={(open) => !open && onClose()}>
-      <AlertDialogContent>
+      <AlertDialogContent data-cy="booking-info-dialog">
         <AlertDialogHeader>
-          <AlertDialogTitle>{dialog?.title}</AlertDialogTitle>
-          <AlertDialogDescription className="text-base">{dialog?.description}</AlertDialogDescription>
+          <AlertDialogTitle data-cy="booking-info-title">{dialog?.title}</AlertDialogTitle>
+          <AlertDialogDescription className="text-base" data-cy="booking-info-description">
+            {dialog?.description}
+          </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogAction onClick={onClose}>Entendido</AlertDialogAction>
+          <AlertDialogAction onClick={onClose} data-cy="booking-info-close">
+            Entendido
+          </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
@@ -256,11 +260,18 @@ export function BookingFlow({ slug }: { slug: string }) {
     const isError = loadState === "error";
     return (
       <EmptyState
+        data-cy={isError ? "agenda-error" : "agenda-not-found"}
         className="mt-12 bg-card"
         icon={isError ? WifiOff : CalendarSearch}
         title={isError ? "No pudimos cargar la agenda" : "Agenda no encontrada"}
         description={isError ? "Revisá tu conexión e intentá nuevamente." : "El enlace que ingresaste no existe. Pedile al profesional que te lo vuelva a enviar."}
-        action={isError ? <Button onClick={() => window.location.reload()}>Reintentar</Button> : undefined}
+        action={
+          isError ? (
+            <Button onClick={() => window.location.reload()} data-cy="agenda-retry">
+              Reintentar
+            </Button>
+          ) : undefined
+        }
       />
     );
   }
@@ -370,7 +381,7 @@ export function BookingFlow({ slug }: { slug: string }) {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-cy="booking-page">
       <BookingHeader profile={profile} />
       <StepProgress current={currentStep} />
 
@@ -379,6 +390,7 @@ export function BookingFlow({ slug }: { slug: string }) {
           <EventStep events={agenda.eventTypes} onSelect={selectEvent} />
         ) : (
           <EmptyState
+            data-cy="no-events"
             icon={CalendarSearch}
             title="Todavía no hay turnos para reservar"
             description={`Escribile a ${profile.nombre} a ${profile.email} para coordinar.`}
@@ -400,7 +412,13 @@ export function BookingFlow({ slug }: { slug: string }) {
             onBack={() => setStep(0)}
           />
           <StickyActionBar>
-            <Button size="lg" className="w-full" disabled={!pendingSlot?.disponible || locking} onClick={confirmSelection}>
+            <Button
+              size="lg"
+              className="w-full"
+              disabled={!pendingSlot?.disponible || locking}
+              onClick={confirmSelection}
+              data-cy="confirm-slot"
+            >
               {locking && <Loader2 className="size-5 animate-spin" aria-hidden="true" />}
               {pendingSlot?.disponible
                 ? `Confirmar selección · ${formatFechaCompacta(pendingSlot.fecha)} ${pendingSlot.horaInicio}`

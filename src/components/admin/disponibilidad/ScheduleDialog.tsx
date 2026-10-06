@@ -79,6 +79,7 @@ function ApplyStep({
             type="button"
             role="radio"
             aria-checked={tipo === o.value}
+            data-cy={`schedule-type-${o.value}`}
             onClick={() => setTipo(o.value)}
             className={cn(
               "flex gap-3 rounded-lg border p-4 text-left transition-colors",
@@ -96,15 +97,26 @@ function ApplyStep({
       {tipo === "permanent" && (
         <div className="space-y-2">
           <Label htmlFor="fecha-inicio">Fecha inicial</Label>
-          <Input id="fecha-inicio" type="date" min={today} value={fecha} onChange={(e) => setFecha(e.target.value)} />
-          {fecha && <p className="text-sm text-muted-foreground">Vigente desde el {formatFechaLarga(fecha).toLowerCase()}.</p>}
+          <Input
+            id="fecha-inicio"
+            type="date"
+            min={today}
+            value={fecha}
+            onChange={(e) => setFecha(e.target.value)}
+            data-cy="schedule-start-date"
+          />
+          {fecha && <p className="text-sm text-muted-foreground" data-cy="schedule-start-date-hint">Vigente desde el {formatFechaLarga(fecha).toLowerCase()}.</p>}
         </div>
       )}
       <DialogFooter>
-        <Button variant="outline" onClick={onBack} disabled={saving}>
+        <Button variant="outline" onClick={onBack} disabled={saving} data-cy="schedule-back">
           Volver
         </Button>
-        <Button onClick={() => onConfirm(tipo, fecha)} disabled={saving || (tipo === "permanent" && !fecha)}>
+        <Button
+          onClick={() => onConfirm(tipo, fecha)}
+          disabled={saving || (tipo === "permanent" && !fecha)}
+          data-cy="schedule-save"
+        >
           {saving && <Loader2 className="animate-spin" aria-hidden="true" />}
           Guardar horario
         </Button>
@@ -171,6 +183,7 @@ function ScheduleForm({
                   variant="link"
                   size="sm"
                   className="h-auto px-0"
+                  data-cy="schedule-weekdays"
                   onClick={() => form.setValue("dias", [1, 2, 3, 4, 5], { shouldValidate: true })}
                 >
                   Lunes a viernes
@@ -190,6 +203,7 @@ function ScheduleForm({
                       key={d.value}
                       value={String(d.value)}
                       aria-label={d.label}
+                      data-cy={`schedule-day-${d.value}`}
                       className="h-11 px-0 data-[state=on]:border-primary data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
                     >
                       {d.corto}
@@ -197,7 +211,7 @@ function ScheduleForm({
                   ))}
                 </ToggleGroup>
               </FormControl>
-              <FormMessage />
+              <FormMessage data-cy="schedule-days-error" />
             </FormItem>
           )}
         />
@@ -213,9 +227,9 @@ function ScheduleForm({
                   <FormItem className="flex-1">
                     <FormLabel className="sr-only">Inicio de la franja {i + 1}</FormLabel>
                     <FormControl>
-                      <Input type="time" step={300} {...field} />
+                      <Input type="time" step={300} data-cy={`schedule-start-${i}`} {...field} />
                     </FormControl>
-                    <FormMessage />
+                    <FormMessage data-cy={`schedule-start-error-${i}`} />
                   </FormItem>
                 )}
               />
@@ -229,9 +243,9 @@ function ScheduleForm({
                   <FormItem className="flex-1">
                     <FormLabel className="sr-only">Fin de la franja {i + 1}</FormLabel>
                     <FormControl>
-                      <Input type="time" step={300} {...field} />
+                      <Input type="time" step={300} data-cy={`schedule-end-${i}`} {...field} />
                     </FormControl>
-                    <FormMessage />
+                    <FormMessage data-cy={`schedule-end-error-${i}`} />
                   </FormItem>
                 )}
               />
@@ -242,6 +256,7 @@ function ScheduleForm({
                 onClick={() => remove(i)}
                 disabled={fields.length === 1}
                 aria-label={`Quitar franja ${i + 1}`}
+                data-cy={`schedule-remove-range-${i}`}
               >
                 <Trash2 aria-hidden="true" />
               </Button>
@@ -251,6 +266,7 @@ function ScheduleForm({
             type="button"
             variant="outline"
             size="sm"
+            data-cy="schedule-add-range"
             onClick={() => {
               const last = form.getValues("franjas").at(-1);
               append({ inicio: last?.fin ?? "14:00", fin: "18:00" });
@@ -262,10 +278,10 @@ function ScheduleForm({
         </fieldset>
 
         <DialogFooter>
-          <Button type="button" variant="outline" onClick={onCancel}>
+          <Button type="button" variant="outline" onClick={onCancel} data-cy="schedule-cancel">
             Cancelar
           </Button>
-          <Button type="submit">
+          <Button type="submit" data-cy="schedule-continue">
             <CalendarDays aria-hidden="true" />
             Continuar
           </Button>
@@ -288,7 +304,7 @@ export function ScheduleDialog({
 }) {
   return (
     <Dialog open={!!draft} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="sm:max-w-lg" data-cy="schedule-dialog">
         {draft && (
           <ScheduleForm
             draft={draft}

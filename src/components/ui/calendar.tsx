@@ -15,6 +15,7 @@ import {
 import { es } from "react-day-picker/locale"
 
 import { Button, buttonVariants } from "@/components/ui/button"
+import { toFechaStr } from "@/lib/format"
 
 function Calendar({
   className,
@@ -166,6 +167,8 @@ function Calendar({
           )
         },
         DayButton: CalendarDayButton,
+        PreviousMonthButton: (props) => <button data-cy="calendar-prev" {...props} />,
+        NextMonthButton: (props) => <button data-cy="calendar-next" {...props} />,
         WeekNumber: ({ children, ...props }) => {
           return (
             <td {...props}>
@@ -201,6 +204,8 @@ function CalendarDayButton({
       variant="ghost"
       size="icon"
       data-day={day.date.toLocaleDateString()}
+      data-cy="calendar-day"
+      data-fecha={toFechaStr(day.date)}
       data-selected-single={
         modifiers.selected &&
         !modifiers.range_start &&

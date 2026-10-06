@@ -42,10 +42,10 @@ export function GuestFormStep({
   const canSubmit = form.formState.isValid && !submitting;
 
   return (
-    <section aria-labelledby="paso-datos" className="space-y-4">
+    <section aria-labelledby="paso-datos" className="space-y-4" data-cy="booking-step-guest">
       <CountdownBanner expiresAt={expiresAt} onExpire={onExpire} />
 
-      <div className="rounded-xl border bg-card p-4 shadow-soft">
+      <div className="rounded-xl border bg-card p-4 shadow-soft" data-cy="guest-slot-summary">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0 space-y-1">
             <p className="font-semibold">{event.nombre}</p>
@@ -58,7 +58,7 @@ export function GuestFormStep({
               {slot.horaInicio} a {slot.horaFin} h
             </p>
           </div>
-          <Button variant="link" className="h-auto shrink-0 p-0" onClick={onChangeSlot}>
+          <Button variant="link" className="h-auto shrink-0 p-0" onClick={onChangeSlot} data-cy="guest-change-slot">
             Cambiar
           </Button>
         </div>
@@ -86,9 +86,9 @@ export function GuestFormStep({
                 <FormItem>
                   <FormLabel>Nombre</FormLabel>
                   <FormControl>
-                    <Input autoComplete="given-name" className="h-12 text-base" {...field} />
+                    <Input autoComplete="given-name" className="h-12 text-base" data-cy="guest-nombre" {...field} />
                   </FormControl>
-                  <FormMessage />
+                  <FormMessage data-cy="guest-nombre-error" />
                 </FormItem>
               )}
             />
@@ -99,9 +99,9 @@ export function GuestFormStep({
                 <FormItem>
                   <FormLabel>Apellido</FormLabel>
                   <FormControl>
-                    <Input autoComplete="family-name" className="h-12 text-base" {...field} />
+                    <Input autoComplete="family-name" className="h-12 text-base" data-cy="guest-apellido" {...field} />
                   </FormControl>
-                  <FormMessage />
+                  <FormMessage data-cy="guest-apellido-error" />
                 </FormItem>
               )}
             />
@@ -113,9 +113,16 @@ export function GuestFormStep({
               <FormItem>
                 <FormLabel>Email</FormLabel>
                 <FormControl>
-                  <Input type="email" inputMode="email" autoComplete="email" className="h-12 text-base" {...field} />
+                  <Input
+                    type="email"
+                    inputMode="email"
+                    autoComplete="email"
+                    className="h-12 text-base"
+                    data-cy="guest-email"
+                    {...field}
+                  />
                 </FormControl>
-                <FormMessage />
+                <FormMessage data-cy="guest-email-error" />
               </FormItem>
             )}
           />
@@ -126,10 +133,17 @@ export function GuestFormStep({
               <FormItem>
                 <FormLabel>Teléfono</FormLabel>
                 <FormControl>
-                  <Input type="tel" inputMode="tel" autoComplete="tel" className="h-12 text-base" {...field} />
+                  <Input
+                    type="tel"
+                    inputMode="tel"
+                    autoComplete="tel"
+                    className="h-12 text-base"
+                    data-cy="guest-telefono"
+                    {...field}
+                  />
                 </FormControl>
                 <FormDescription>Solo números. Podés incluir el código de área.</FormDescription>
-                <FormMessage />
+                <FormMessage data-cy="guest-telefono-error" />
               </FormItem>
             )}
           />
@@ -142,12 +156,19 @@ export function GuestFormStep({
                   Nota <span className="font-normal text-muted-foreground">(opcional)</span>
                 </FormLabel>
                 <FormControl>
-                  <Textarea maxLength={NOTA_MAX} rows={3} className="min-h-24 resize-none text-base" {...field} />
+                  <Textarea
+                    maxLength={NOTA_MAX}
+                    rows={3}
+                    className="min-h-24 resize-none text-base"
+                    data-cy="guest-nota"
+                    {...field}
+                  />
                 </FormControl>
                 <div className="flex justify-between gap-2">
-                  <FormMessage />
+                  <FormMessage data-cy="guest-nota-error" />
                   <p
                     aria-live="polite"
+                    data-cy="guest-nota-counter"
                     className={cn(
                       "ml-auto text-sm tabular-nums",
                       nota.length >= NOTA_MAX ? "font-semibold text-destructive" : "text-muted-foreground"
@@ -163,12 +184,19 @@ export function GuestFormStep({
       </Form>
 
       <StickyActionBar>
-        <Button type="submit" form="guest-form" size="lg" className="w-full" disabled={!canSubmit}>
+        <Button
+          type="submit"
+          form="guest-form"
+          size="lg"
+          className="w-full"
+          disabled={!canSubmit}
+          data-cy="confirm-booking"
+        >
           {submitting && <Loader2 className="size-5 animate-spin" aria-hidden="true" />}
           {submitting ? "Confirmando..." : "Confirmar reserva"}
         </Button>
         {!form.formState.isValid && !submitting && (
-          <p className="mt-2 text-center text-sm text-muted-foreground">
+          <p className="mt-2 text-center text-sm text-muted-foreground" data-cy="guest-form-hint">
             Completá tus datos para confirmar.
           </p>
         )}

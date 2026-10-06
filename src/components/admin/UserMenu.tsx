@@ -24,7 +24,7 @@ export function UserMenu() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="h-10 gap-2 px-1.5" aria-label="Menú de usuario">
+        <Button variant="ghost" className="h-10 gap-2 px-1.5" aria-label="Menú de usuario" data-cy="user-menu">
           <Avatar className="size-8">
             {profile.foto && <AvatarImage src={profile.foto} alt="" />}
             <AvatarFallback className="bg-secondary text-xs font-semibold text-secondary-foreground">
@@ -54,6 +54,7 @@ export function UserMenu() {
         )}
         <DropdownMenuSeparator />
         <DropdownMenuItem
+          data-cy="logout"
           onSelect={async () => {
             await logout();
             router.push("/admin/login");

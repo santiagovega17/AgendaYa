@@ -33,6 +33,9 @@ function SlotGroup({
               type="button"
               disabled={!slot.disponible}
               aria-pressed={selected}
+              data-cy="slot-option"
+              data-hora={slot.horaInicio}
+              data-vencido={slot.vencido ? "true" : "false"}
               aria-label={slot.disponible ? `${slot.horaInicio}` : `${slot.horaInicio}, ${motivo}`}
               onClick={() => onPick(slot)}
               className={cn(
@@ -80,9 +83,15 @@ export function DateTimeStep({
   const hayDisponibles = slots.some((s) => s.disponible);
 
   return (
-    <section aria-labelledby="paso-fecha" className="space-y-4">
+    <section aria-labelledby="paso-fecha" className="space-y-4" data-cy="booking-step-datetime">
       <div className="flex items-center gap-2">
-        <Button variant="ghost" size="icon" onClick={onBack} aria-label="Volver a elegir el tipo de turno">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={onBack}
+          aria-label="Volver a elegir el tipo de turno"
+          data-cy="booking-back-to-events"
+        >
           <ChevronLeft className="size-5" aria-hidden="true" />
         </Button>
         <div className="min-w-0">
@@ -119,8 +128,8 @@ export function DateTimeStep({
       </div>
 
       {selectedDate && (
-        <div className="space-y-4" aria-live="polite">
-          <h3 className="flex items-center gap-2 font-semibold">
+        <div className="space-y-4" aria-live="polite" data-cy="slot-list">
+          <h3 className="flex items-center gap-2 font-semibold" data-cy="slot-list-date">
             <Clock className="size-4 text-muted-foreground" aria-hidden="true" />
             {formatFechaLarga(selectedDate)}
           </h3>
@@ -131,6 +140,7 @@ export function DateTimeStep({
             </>
           ) : (
             <EmptyState
+              data-cy="no-slots"
               icon={CalendarX2}
               title="No quedan horarios este día"
               description="Probá con otro día marcado en el calendario."
