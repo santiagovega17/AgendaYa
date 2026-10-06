@@ -53,6 +53,10 @@ npm run cy:run    # modo headless, deja capturas en cypress/screenshots si algo 
 
 Para correr un solo archivo: `npx cypress run --e2e --spec cypress/e2e/<archivo>.cy.ts`.
 
+En modo interactivo los tests van a ritmo humano: pausa de 700 ms después de cada clic y tipeo tecla por tecla (`cypress/support/demora.ts`). En modo headless y en el CI no hay demora. Para cambiarla, definir `E2E_DEMORA_MS` en `.env.local` (`0` la desactiva; por ejemplo `E2E_DEMORA_MS=700 npm run cy:run` deja la demora en headless).
+
+Todos usan la misma cuenta de test y cada test resetea su agenda: no correr los E2E en dos máquinas (o dos ventanas) al mismo tiempo.
+
 `cypress/e2e/00-entorno.cy.ts` verifica que el entorno esté bien configurado. Si falla, revisar `.env.local` y que la app esté corriendo.
 
 ### Entorno de test

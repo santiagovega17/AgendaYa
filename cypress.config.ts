@@ -16,6 +16,9 @@ export default defineConfig({
       ADMIN_EMAIL: process.env.E2E_ADMIN_EMAIL,
       ADMIN_PASSWORD: process.env.E2E_ADMIN_PASSWORD,
     },
+    expose: {
+      DEMORA_MS: process.env.E2E_DEMORA_MS,
+    },
     setupNodeEvents(on) {
       on("task", {
         prepararAgenda: (escenario: Escenario = {}) => prepararAgenda(escenario),
