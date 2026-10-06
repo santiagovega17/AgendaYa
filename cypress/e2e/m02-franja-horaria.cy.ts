@@ -3,7 +3,6 @@ import { es } from "date-fns/locale";
 import { fechaStr } from "../support/fechas";
 
 /**
- * Integrante: Moyano, Bruno Ezequiel
  * Requerimiento: AYA-M02-RF01 · Definición de disponibilidad laboral
  * Casos del TP5: CP-001 (positivo) y CP-002 (negativo)
  */

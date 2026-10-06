@@ -1,7 +1,6 @@
 import { diaHabil } from "../support/fechas";
 
 /**
- * Integrante: Rosales Pedroza, Nicolás
  * Requerimiento: AYA-M02-RF03 · Bloqueo de días
  * Casos del TP5: CP-009 (positivo) y CP-010 (negativo)
  */

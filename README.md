@@ -98,7 +98,7 @@ Los avisos (toasts) no son interactivos y no tienen `data-cy`: se verifican con 
 
 ### Estructura de un test
 
-Cada integrante agrega su archivo en `cypress/e2e/`, por ejemplo `cypress/e2e/m04-email-invalido.cy.ts`. Todos los tests siguen el patrón Arrange / Act / Assert con esos comentarios:
+Cada test va en su propio archivo en `cypress/e2e/`, por ejemplo `cypress/e2e/m04-email-invalido.cy.ts`. Todos los tests siguen el patrón Arrange / Act / Assert con esos comentarios:
 
 ```ts
 import { diaHabil } from "../support/fechas";

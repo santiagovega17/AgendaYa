@@ -1,5 +1,5 @@
 /**
- * Verificación del entorno de test (no es el test de ningún integrante).
+ * Verificación del entorno de test.
  * Si estos tests fallan, revisar .env.local y que el frontend esté levantado.
  */
 describe("AgendaYA - Entorno de test", () => {
