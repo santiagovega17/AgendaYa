@@ -1,5 +1,4 @@
 /**
- * Integrante: Vega Gallardo, Santiago
  * Requerimiento: AYA-M02-RF06 · Configuración de límite máximo de reservas por actividad
  * Casos del TP5: CP-007 (positivo) y CP-008 (negativo)
  */
