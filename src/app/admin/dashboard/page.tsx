@@ -37,11 +37,10 @@ import { BookingDetailSheet, useBookingActions } from "@/components/admin/Bookin
 import { EmptyState } from "@/components/common/EmptyState";
 import { PageHeader } from "@/components/common/PageHeader";
 import { StatusBadge } from "@/components/common/StatusBadge";
+import { isActive } from "@/lib/booking/bookings";
 import { formatFechaCompacta, formatFechaLarga, formatFechaRelativa, toFechaStr } from "@/lib/format";
 import type { Booking } from "@/lib/types";
 import { useAgendaStore } from "@/store/useAgendaStore";
-
-const isActive = (b: Booking) => b.estado === "pendiente" || b.estado === "confirmada";
 
 function StatCard({
   icon: Icon,

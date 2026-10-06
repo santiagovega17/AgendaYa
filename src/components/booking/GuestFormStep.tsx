@@ -2,7 +2,6 @@
 
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import { CalendarDays, Clock, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,21 +12,7 @@ import { StickyActionBar } from "@/components/booking/StickyActionBar";
 import { cn } from "@/lib/utils/cn";
 import { formatFechaLarga } from "@/lib/format";
 import type { EventType, GuestData, Slot } from "@/lib/types";
-
-const NOTA_MAX = 200;
-
-export const guestSchema = z.object({
-  nombre: z.string().trim().min(1, "Ingresá tu nombre"),
-  apellido: z.string().trim().min(1, "Ingresá tu apellido"),
-  email: z.string().trim().email("Ingresá un email válido, por ejemplo nombre@correo.com"),
-  telefono: z
-    .string()
-    .trim()
-    .regex(/^\+?[0-9 ()-]{6,20}$/, "Ingresá un teléfono válido (solo números)"),
-  nota: z.string().max(NOTA_MAX, `La nota admite hasta ${NOTA_MAX} caracteres`).optional(),
-});
-
-export type GuestFormValues = z.infer<typeof guestSchema>;
+import { NOTA_MAX, guestSchema, type GuestFormValues } from "@/lib/validation/guest";
 
 export function GuestFormStep({
   event,
