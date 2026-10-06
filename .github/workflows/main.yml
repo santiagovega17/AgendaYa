@@ -24,6 +24,9 @@ jobs:
 
       - name: Instalar dependencias
         run: npm ci
+        env:
+          # Los tests E2E se corren en local contra Supabase; en CI no hace falta el binario de Cypress
+          CYPRESS_INSTALL_BINARY: 0
 
       - name: Correr pruebas unitarias
         run: npm run test
