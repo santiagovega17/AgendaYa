@@ -157,6 +157,7 @@ export async function prepararAgenda(escenario: Escenario = {}): Promise<AgendaP
 
     return { slug: ENTORNO.slug, adminId, eventoId: evento.id };
   } finally {
-    await db.auth.signOut();
+    // "global" (el valor por defecto) revocaría también la sesión que cy.session guarda para el navegador.
+    await db.auth.signOut({ scope: "local" });
   }
 }
