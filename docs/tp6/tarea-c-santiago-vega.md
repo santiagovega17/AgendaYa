@@ -11,11 +11,11 @@ Cómo correrlos: `npx vitest run src/lib/booking/limiteDiario.test.ts --reporter
 
 ## 1. Prompt
 
-Pedido al agente, en la misma conversación en la que se había trabajado el TP6 y los tests E2E:
+> Estoy haciendo el TP6 de Ingeniería y Calidad de Software sobre AgendaYA (Next.js + TypeScript, tests unitarios con Vitest). Me toca el requerimiento AYA–M02–RF06 «Configuración de límite máximo de reservas por actividad»: el administrador define cuántas reservas acepta por tipo de evento en un mismo día. El límite tiene que ser un entero mayor a cero, no puede quedar por debajo de las reservas que ya existen para un día, y cuando un día alcanza el límite el enlace público deja de ofrecer turnos de esa actividad. Solo cuentan las reservas activas (pendientes o confirmadas).
+>
+> Necesito al menos 5 tests unitarios sobre al menos 2 funciones, cubriendo caso normal, caso borde y caso inválido. Buscá en el repositorio las funciones que implementan esta regla (la validación del formulario ya está cubierta por los tests del TP5, en `src/lib/validation/casosDePrueba.test.ts`), leé sus tipos en `src/lib/types/index.ts` y pasá siempre una fecha `now` fija para que los tests no dependan del día en que se corren. Indicá en el nombre de cada test si es normal, borde o inválido.
 
-> has mis 5 test unitarios
-
-El agente ya tenía como contexto el enunciado del TP6 (sección 7: al menos 5 tests, al menos 2 funciones, casos normal / borde / inválido) y que mis casos del TP5 eran CP-007 y CP-008 (límite diario). Con eso buscó en el código las funciones que implementan el límite y eligió las dos de arriba.
+En la conversación el pedido fue más corto («has mis 5 test unitarios»). El resto del prompt es el contexto que el agente ya tenía en esa misma conversación (el enunciado del TP6 y mis casos CP-007 y CP-008 del TP5), escrito acá de forma explícita. Con eso el agente buscó en el código las funciones que implementan el límite y eligió las dos de arriba.
 
 ## 2. Output generado
 
