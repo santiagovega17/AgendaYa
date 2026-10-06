@@ -22,12 +22,14 @@ export function EventStep({
       <h2 id="paso-evento" className="text-lg font-semibold">
         ¿Qué tipo de turno necesitás?
       </h2>
-      <ul className="space-y-3">
+      <ul className="space-y-3" data-cy="event-list">
         {events.map((evt) => (
           <li key={evt.id}>
             <button
               type="button"
               onClick={() => onSelect(evt.id)}
+              data-cy="event-option"
+              data-nombre={evt.nombre}
               className="group flex w-full items-center gap-3 rounded-xl border bg-card p-4 text-left shadow-soft transition-[border-color,box-shadow] duration-200 hover:border-primary/50 hover:shadow-soft-lg focus-visible:border-primary"
             >
               <div className="min-w-0 flex-1">

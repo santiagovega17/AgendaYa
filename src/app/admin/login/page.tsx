@@ -105,6 +105,7 @@ function AuthForm({ mode, onModeChange }: { mode: Mode; onModeChange: (m: Mode) 
               ref={errorRef}
               tabIndex={-1}
               role="alert"
+              data-cy="login-error"
               className="flex gap-2 rounded-md border border-destructive/30 bg-danger-soft p-3 text-sm text-danger-soft-foreground outline-none"
             >
               <AlertCircle className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
@@ -120,9 +121,9 @@ function AuthForm({ mode, onModeChange }: { mode: Mode; onModeChange: (m: Mode) 
                 <FormItem>
                   <FormLabel>Nombre o empresa</FormLabel>
                   <FormControl>
-                    <Input autoComplete="organization" maxLength={100} {...field} />
+                    <Input autoComplete="organization" maxLength={100} data-cy="signup-nombre" {...field} />
                   </FormControl>
-                  <FormMessage />
+                  <FormMessage data-cy="signup-nombre-error" />
                 </FormItem>
               )}
             />
@@ -135,9 +136,16 @@ function AuthForm({ mode, onModeChange }: { mode: Mode; onModeChange: (m: Mode) 
               <FormItem>
                 <FormLabel>Email</FormLabel>
                 <FormControl>
-                  <Input type="email" inputMode="email" autoComplete="email" placeholder="vos@ejemplo.com" {...field} />
+                  <Input
+                    type="email"
+                    inputMode="email"
+                    autoComplete="email"
+                    placeholder="vos@ejemplo.com"
+                    data-cy="login-email"
+                    {...field}
+                  />
                 </FormControl>
-                <FormMessage />
+                <FormMessage data-cy="login-email-error" />
               </FormItem>
             )}
           />
@@ -154,6 +162,7 @@ function AuthForm({ mode, onModeChange }: { mode: Mode; onModeChange: (m: Mode) 
                       <button
                         type="button"
                         className="text-sm font-medium text-primary underline-offset-4 hover:underline"
+                        data-cy="login-forgot"
                         onClick={() => onModeChange("recuperar")}
                       >
                         ¿La olvidaste?
@@ -163,17 +172,18 @@ function AuthForm({ mode, onModeChange }: { mode: Mode; onModeChange: (m: Mode) 
                   <FormControl>
                     <PasswordInput
                       autoComplete={mode === "login" ? "current-password" : "new-password"}
+                      data-cy="login-password"
                       {...field}
                       value={field.value ?? ""}
                     />
                   </FormControl>
-                  <FormMessage />
+                  <FormMessage data-cy="login-password-error" />
                 </FormItem>
               )}
             />
           )}
 
-          <Button type="submit" size="lg" className="w-full" disabled={submitting}>
+          <Button type="submit" size="lg" className="w-full" disabled={submitting} data-cy="login-submit">
             {submitting && <Loader2 className="animate-spin" aria-hidden="true" />}
             {submitting ? "Procesando…" : COPY[mode].submit}
           </Button>
@@ -187,6 +197,7 @@ function AuthForm({ mode, onModeChange }: { mode: Mode; onModeChange: (m: Mode) 
             <button
               type="button"
               className="font-medium text-primary underline-offset-4 hover:underline"
+              data-cy="login-go-signup"
               onClick={() => onModeChange("registro")}
             >
               Registrate
@@ -196,6 +207,7 @@ function AuthForm({ mode, onModeChange }: { mode: Mode; onModeChange: (m: Mode) 
           <button
             type="button"
             className="font-medium text-primary underline-offset-4 hover:underline"
+            data-cy="login-go-login"
             onClick={() => onModeChange("login")}
           >
             Volver a iniciar sesión
@@ -219,7 +231,7 @@ function DemoCard({ onFill }: { onFill: () => void }) {
           <p className="text-sm font-medium">Cuenta demo</p>
           <p className="truncate text-sm text-muted-foreground">{DEMO_EMAIL}</p>
         </div>
-        <Button type="button" variant="outline" size="sm" onClick={onFill}>
+        <Button type="button" variant="outline" size="sm" onClick={onFill} data-cy="login-demo-fill">
           Completar
         </Button>
       </CardContent>

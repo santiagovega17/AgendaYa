@@ -7,15 +7,18 @@ export function EmptyState({
   description,
   action,
   className,
+  "data-cy": dataCy,
 }: {
   icon: LucideIcon;
   title: string;
   description?: string;
   action?: React.ReactNode;
   className?: string;
+  "data-cy"?: string;
 }) {
   return (
     <div
+      data-cy={dataCy}
       className={cn(
         "flex flex-col items-center justify-center rounded-xl border border-dashed px-6 py-10 text-center",
         className

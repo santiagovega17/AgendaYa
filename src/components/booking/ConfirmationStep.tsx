@@ -25,15 +25,15 @@ export function ConfirmationStep({
   const Icon = pending ? Hourglass : CheckCircle2;
 
   const rows = [
-    { label: "Actividad", value: event?.nombre ?? "—" },
-    { label: "Fecha", value: formatFechaLarga(booking.fecha) },
-    { label: "Horario", value: `${booking.horaInicio} a ${booking.horaFin} h` },
-    { label: "Con", value: profile.nombre },
-    { label: "A nombre de", value: guestName },
+    { key: "activity", label: "Actividad", value: event?.nombre ?? "—" },
+    { key: "date", label: "Fecha", value: formatFechaLarga(booking.fecha) },
+    { key: "time", label: "Horario", value: `${booking.horaInicio} a ${booking.horaFin} h` },
+    { key: "admin", label: "Con", value: profile.nombre },
+    { key: "guest-name", label: "A nombre de", value: guestName },
   ];
 
   return (
-    <section aria-labelledby="paso-listo" className="space-y-6">
+    <section aria-labelledby="paso-listo" className="space-y-6" data-cy="booking-success" data-estado={booking.estado}>
       <div className="flex flex-col items-center text-center" role="status">
         <div
           className={cn(
@@ -43,7 +43,7 @@ export function ConfirmationStep({
         >
           <Icon className="size-8" aria-hidden="true" />
         </div>
-        <h2 id="paso-listo" className="mt-4 text-2xl font-semibold tracking-tight">
+        <h2 id="paso-listo" className="mt-4 text-2xl font-semibold tracking-tight" data-cy="booking-success-title">
           {pending ? "¡Solicitud enviada!" : "¡Reserva confirmada!"}
         </h2>
         <p className="mt-1 max-w-xs text-muted-foreground">
@@ -56,13 +56,17 @@ export function ConfirmationStep({
       <div className="rounded-xl border bg-card shadow-soft">
         <div className="border-b px-4 py-3 text-center">
           <p className="text-sm text-muted-foreground">Número de reserva</p>
-          <p className="font-mono text-2xl font-semibold tracking-wider">{booking.numeroReserva}</p>
+          <p className="font-mono text-2xl font-semibold tracking-wider" data-cy="booking-number">
+            {booking.numeroReserva}
+          </p>
         </div>
         <dl className="divide-y">
           {rows.map((r) => (
-            <div key={r.label} className="flex justify-between gap-4 px-4 py-3">
+            <div key={r.key} className="flex justify-between gap-4 px-4 py-3">
               <dt className="text-muted-foreground">{r.label}</dt>
-              <dd className="text-right font-medium">{r.value}</dd>
+              <dd className="text-right font-medium" data-cy={`booking-${r.key}`}>
+                {r.value}
+              </dd>
             </div>
           ))}
         </dl>
@@ -72,6 +76,7 @@ export function ConfirmationStep({
         <Button
           size="lg"
           className="w-full"
+          data-cy="booking-add-calendar"
           onClick={() =>
             downloadIcs({
               uid: booking.numeroReserva,
@@ -86,7 +91,7 @@ export function ConfirmationStep({
           <CalendarPlus className="size-5" aria-hidden="true" />
           Agregar a mi calendario
         </Button>
-        <Button size="lg" variant="ghost" className="w-full" onClick={onRestart}>
+        <Button size="lg" variant="ghost" className="w-full" onClick={onRestart} data-cy="booking-restart">
           <RotateCcw className="size-5" aria-hidden="true" />
           Hacer otra reserva
         </Button>

@@ -49,7 +49,12 @@ export function CountdownBanner({ expiresAt, onExpire }: { expiresAt: string; on
         <p className="flex-1">
           {urgent ? "Último minuto para confirmar" : "Te guardamos este horario por"}
         </p>
-        <span role="timer" aria-label={`Tiempo restante ${mins} minutos ${secs} segundos`} className="text-lg font-semibold tabular-nums">
+        <span
+          role="timer"
+          aria-label={`Tiempo restante ${mins} minutos ${secs} segundos`}
+          className="text-lg font-semibold tabular-nums"
+          data-cy="countdown-timer"
+        >
           {label}
         </span>
       </div>

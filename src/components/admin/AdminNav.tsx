@@ -27,6 +27,7 @@ export function AdminNav({ onNavigate }: { onNavigate?: () => void }) {
             key={href}
             href={href}
             onClick={onNavigate}
+            data-cy={`nav-${href.split("/").pop()}`}
             aria-current={active ? "page" : undefined}
             className={cn(
               "flex h-10 items-center gap-3 rounded-lg px-3 text-sm font-medium transition-colors duration-150",

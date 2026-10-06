@@ -93,6 +93,8 @@ function BookingRow({ booking, onOpen }: { booking: Booking; onOpen: () => void 
       <button
         type="button"
         onClick={onOpen}
+        data-cy="day-booking"
+        data-numero={booking.numeroReserva}
         className="flex w-full items-center gap-3 rounded-lg px-2 py-2.5 text-left transition-colors hover:bg-accent"
       >
         <span className="w-12 shrink-0 font-semibold tabular-nums">{booking.horaInicio}</span>
@@ -206,7 +208,7 @@ export default function DashboardPage() {
   const conflictTotal = conflicts.reduce((n, c) => n + c.bookings.length, 0);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-cy="dashboard-page">
       <PageHeader
         title={`Hola, ${firstName}`}
         description={`${formatFechaLarga(today)} · ${
@@ -214,12 +216,12 @@ export default function DashboardPage() {
         }`}
         actions={
           <>
-            <Button variant="outline" onClick={copyLink} disabled={!profile.slug}>
+            <Button variant="outline" onClick={copyLink} disabled={!profile.slug} data-cy="copy-public-link">
               <Copy aria-hidden="true" />
               Copiar enlace
             </Button>
             <Button asChild>
-              <Link href="/admin/agenda">
+              <Link href="/admin/agenda" data-cy="go-agenda">
                 <CalendarDays aria-hidden="true" />
                 Ver agenda
               </Link>
@@ -245,7 +247,7 @@ export default function DashboardPage() {
       <div className="grid gap-6 lg:grid-cols-5">
         <Card className="lg:col-span-3">
           <CardHeader>
-            <CardTitle>{blockMode ? "Elegí los días a bloquear" : "Calendario"}</CardTitle>
+            <CardTitle data-cy="calendar-title">{blockMode ? "Elegí los días a bloquear" : "Calendario"}</CardTitle>
             <CardDescription>
               {blockMode
                 ? "Tocá uno o varios días. Los días bloqueados no muestran turnos en tu enlace público."
@@ -253,12 +255,12 @@ export default function DashboardPage() {
             </CardDescription>
             <CardAction>
               {blockMode ? (
-                <Button variant="ghost" onClick={exitBlockMode}>
+                <Button variant="ghost" onClick={exitBlockMode} data-cy="block-days-exit">
                   <X aria-hidden="true" />
                   Salir
                 </Button>
               ) : (
-                <Button variant="outline" onClick={() => setBlockMode(true)}>
+                <Button variant="outline" onClick={() => setBlockMode(true)} data-cy="block-days-start">
                   <Lock aria-hidden="true" />
                   Bloquear días
                 </Button>
@@ -300,15 +302,16 @@ export default function DashboardPage() {
                     maxLength={200}
                     value={motivo}
                     onChange={(e) => setMotivo(e.target.value)}
+                    data-cy="block-reason"
                   />
                 </div>
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                  <p className="text-sm text-muted-foreground" aria-live="polite">
+                  <p className="text-sm text-muted-foreground" aria-live="polite" data-cy="block-selected-count">
                     {toBlock.length === 0
                       ? "Ningún día seleccionado"
                       : `${toBlock.length} ${toBlock.length === 1 ? "día seleccionado" : "días seleccionados"}`}
                   </p>
-                  <Button disabled={toBlock.length === 0} onClick={() => setAskBlock(true)}>
+                  <Button disabled={toBlock.length === 0} onClick={() => setAskBlock(true)} data-cy="block-days-submit">
                     <Lock aria-hidden="true" />
                     Bloquear {toBlock.length > 0 ? toBlock.length : ""} {toBlock.length === 1 ? "día" : "días"}
                   </Button>
@@ -321,8 +324,8 @@ export default function DashboardPage() {
         <div className="space-y-6 lg:col-span-2">
           <Card>
             <CardHeader>
-              <CardTitle>{formatFechaRelativa(selectedDay)}</CardTitle>
-              <CardDescription>
+              <CardTitle data-cy="day-title">{formatFechaRelativa(selectedDay)}</CardTitle>
+              <CardDescription data-cy="day-summary">
                 {blocked.has(selectedDay)
                   ? "Día bloqueado"
                   : `${delDia.length} ${delDia.length === 1 ? "turno" : "turnos"}`}
@@ -371,7 +374,7 @@ export default function DashboardPage() {
                           {formatFechaCompacta(b.fecha)} · {b.horaInicio}
                         </span>
                       </button>
-                      <Button size="sm" onClick={() => approve(b.id)}>
+                      <Button size="sm" onClick={() => approve(b.id)} data-cy="approve-booking">
                         <Check aria-hidden="true" />
                         Aprobar
                       </Button>
@@ -394,11 +397,13 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent>
               {proximosBloqueos.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No bloqueaste ningún día.</p>
+                <p className="text-sm text-muted-foreground" data-cy="blocked-days-empty">
+                  No bloqueaste ningún día.
+                </p>
               ) : (
                 <ul className="space-y-2">
                   {proximosBloqueos.map((b) => (
-                    <li key={b.fecha} className="flex items-center gap-3">
+                    <li key={b.fecha} className="flex items-center gap-3" data-cy="blocked-day" data-fecha={b.fecha}>
                       <Ban className="size-4 shrink-0 text-danger-soft-foreground" aria-hidden="true" />
                       <span className="min-w-0 flex-1">
                         <span className="block font-medium">{formatFechaCompacta(b.fecha)}</span>
@@ -409,6 +414,7 @@ export default function DashboardPage() {
                         size="sm"
                         onClick={() => doUnblock(b.fecha)}
                         aria-label={`Desbloquear ${formatFechaLarga(b.fecha)}`}
+                        data-cy="unblock-day"
                       >
                         <Unlock aria-hidden="true" />
                         Desbloquear
@@ -423,7 +429,7 @@ export default function DashboardPage() {
       </div>
 
       <AlertDialog open={askBlock} onOpenChange={setAskBlock}>
-        <AlertDialogContent>
+        <AlertDialogContent data-cy="block-confirm-dialog">
           <AlertDialogHeader>
             <AlertDialogTitle>
               ¿Bloquear {toBlock.length} {toBlock.length === 1 ? "día" : "días"}?
@@ -443,8 +449,10 @@ export default function DashboardPage() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={working}>Volver</AlertDialogCancel>
-            <Button onClick={doBlock} disabled={working}>
+            <AlertDialogCancel disabled={working} data-cy="block-confirm-cancel">
+              Volver
+            </AlertDialogCancel>
+            <Button onClick={doBlock} disabled={working} data-cy="block-confirm">
               {working && <Loader2 className="animate-spin" aria-hidden="true" />}
               Bloquear
             </Button>
@@ -453,7 +461,7 @@ export default function DashboardPage() {
       </AlertDialog>
 
       <AlertDialog open={conflicts.length > 0} onOpenChange={(o) => !o && setConflicts([])}>
-        <AlertDialogContent>
+        <AlertDialogContent data-cy="block-conflict-dialog">
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2">
               <AlertTriangle className="size-5 text-destructive" aria-hidden="true" />
@@ -470,7 +478,12 @@ export default function DashboardPage() {
                 <p className="text-sm font-semibold">{formatFechaLarga(c.fecha)}</p>
                 <ul className="mt-1 space-y-1">
                   {c.bookings.map((b) => (
-                    <li key={b.id} className="flex justify-between gap-2 text-sm">
+                    <li
+                      key={b.id}
+                      className="flex justify-between gap-2 text-sm"
+                      data-cy="block-conflict-booking"
+                      data-numero={b.numeroReserva}
+                    >
                       <span className="truncate">
                         {b.horaInicio} · {b.invitado.nombre} {b.invitado.apellido}
                       </span>
@@ -482,10 +495,13 @@ export default function DashboardPage() {
             ))}
           </div>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={working}>No bloquear</AlertDialogCancel>
+            <AlertDialogCancel disabled={working} data-cy="block-conflict-cancel">
+              No bloquear
+            </AlertDialogCancel>
             <AlertDialogAction
               variant="destructive"
               disabled={working}
+              data-cy="block-conflict-confirm"
               onClick={(e) => {
                 e.preventDefault();
                 doConfirmConflicts();

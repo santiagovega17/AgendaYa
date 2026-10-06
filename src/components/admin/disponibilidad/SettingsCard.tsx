@@ -64,10 +64,11 @@ function NumberField({
               onBlur={field.onBlur}
               value={Number.isNaN(field.value) ? "" : field.value}
               onChange={(e) => field.onChange(e.target.valueAsNumber)}
+              data-cy={`settings-${name}`}
             />
           </FormControl>
           <FormDescription>{description}</FormDescription>
-          <FormMessage />
+          <FormMessage data-cy={`settings-${name}-error`} />
         </FormItem>
       )}
     />
@@ -126,13 +127,13 @@ export function SettingsCard() {
                   <FormLabel>Intervalo entre turnos</FormLabel>
                   <Select value={String(field.value)} onValueChange={(v) => field.onChange(Number(v))}>
                     <FormControl>
-                      <SelectTrigger className="w-full">
+                      <SelectTrigger className="w-full" data-cy="settings-intervaloMin">
                         <SelectValue />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
                       {INTERVALOS.map((v) => (
-                        <SelectItem key={v} value={String(v)}>
+                        <SelectItem key={v} value={String(v)} data-cy={`settings-intervaloMin-${v}`}>
                           {v === 0 ? "Sin intervalo" : `${v} minutos`}
                         </SelectItem>
                       ))}
@@ -185,7 +186,7 @@ export function SettingsCard() {
             />
           </CardContent>
           <CardFooter className="justify-end border-t">
-            <Button type="submit" disabled={submitting || !form.formState.isDirty}>
+            <Button type="submit" disabled={submitting || !form.formState.isDirty} data-cy="settings-save">
               {submitting && <Loader2 className="animate-spin" aria-hidden="true" />}
               Guardar configuración
             </Button>

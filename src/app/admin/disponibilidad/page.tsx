@@ -177,12 +177,12 @@ function DisponibilidadContent() {
   const itemProps = { today, onEdit: openEdit, onDelete: setDeleting };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-cy="disponibilidad-page">
       <PageHeader
         title="Disponibilidad"
         description="Definí cuándo atendés y cómo se arman los turnos."
         actions={
-          <Button onClick={() => setDraft(NEW_DRAFT)}>
+          <Button onClick={() => setDraft(NEW_DRAFT)} data-cy="add-schedule">
             <Plus aria-hidden="true" />
             Agregar horario
           </Button>
@@ -199,13 +199,14 @@ function DisponibilidadContent() {
             <CardContent>
               <ul className="divide-y">
                 {semana.map((d) => (
-                  <li key={d.value} className="flex items-center gap-3 py-2.5">
+                  <li key={d.value} className="flex items-center gap-3 py-2.5" data-cy="week-day" data-dia={d.value}>
                     <span className="w-24 shrink-0 font-medium">{d.label}</span>
                     {d.franjas.length > 0 ? (
                       <span className="flex flex-wrap gap-1.5">
                         {d.franjas.map((f, i) => (
                           <span
                             key={i}
+                            data-cy="week-day-range"
                             className="rounded-md bg-success-soft px-2 py-0.5 text-sm font-medium tabular-nums text-success-soft-foreground"
                           >
                             {f.inicio}–{f.fin}
@@ -213,7 +214,9 @@ function DisponibilidadContent() {
                         ))}
                       </span>
                     ) : (
-                      <span className="text-sm text-muted-foreground">No laborable</span>
+                      <span className="text-sm text-muted-foreground" data-cy="week-day-off">
+                        No laborable
+                      </span>
                     )}
                   </li>
                 ))}
@@ -226,7 +229,7 @@ function DisponibilidadContent() {
               <CardTitle>Franjas horarias</CardTitle>
               <CardDescription>Los días con el mismo horario aparecen agrupados.</CardDescription>
               <CardAction>
-                <Button variant="outline" size="sm" onClick={() => setDraft(NEW_DRAFT)}>
+                <Button variant="outline" size="sm" onClick={() => setDraft(NEW_DRAFT)} data-cy="add-schedule-card">
                   <Plus aria-hidden="true" />
                   Agregar
                 </Button>
@@ -239,7 +242,7 @@ function DisponibilidadContent() {
                   title="Todavía no cargaste tu horario"
                   description="Sin horario laboral tus invitados no ven turnos disponibles."
                   action={
-                    <Button onClick={() => setDraft(NEW_DRAFT)}>
+                    <Button onClick={() => setDraft(NEW_DRAFT)} data-cy="add-schedule-empty">
                       <Plus aria-hidden="true" />
                       Cargar horario
                     </Button>
@@ -293,8 +296,8 @@ function DisponibilidadContent() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Volver</AlertDialogCancel>
-            <AlertDialogAction variant="destructive" onClick={handleDelete}>
+            <AlertDialogCancel data-cy="schedule-delete-cancel">Volver</AlertDialogCancel>
+            <AlertDialogAction variant="destructive" onClick={handleDelete} data-cy="schedule-delete-confirm">
               Eliminar
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -302,7 +305,7 @@ function DisponibilidadContent() {
       </AlertDialog>
 
       <AlertDialog open={rf02} onOpenChange={setRf02}>
-        <AlertDialogContent>
+        <AlertDialogContent data-cy="schedule-rf02-dialog">
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2">
               <AlertTriangle className="size-5 text-warning-soft-foreground" aria-hidden="true" />
@@ -311,7 +314,7 @@ function DisponibilidadContent() {
             <AlertDialogDescription>{RF02_MENSAJE}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogAction>Entendido</AlertDialogAction>
+            <AlertDialogAction data-cy="schedule-rf02-close">Entendido</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
@@ -331,7 +334,7 @@ function GroupItem({
   onDelete: (g: Group) => void;
 }) {
   return (
-    <li className="flex items-start gap-3 rounded-lg border p-4">
+    <li className="flex items-start gap-3 rounded-lg border p-4" data-cy="schedule-group" data-tipo={g.tipo}>
       <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-secondary text-secondary-foreground">
         {g.tipo === "permanent" ? (
           <Repeat className="size-4" aria-hidden="true" />
@@ -340,13 +343,15 @@ function GroupItem({
         )}
       </span>
       <div className="min-w-0 flex-1">
-        <p className="font-medium">
+        <p className="font-medium" data-cy="schedule-group-days">
           {g.tipo === "permanent"
             ? diasLabel(g.dias)
             : g.schedules.map((s) => (s.fechaInicio ? formatFechaCompacta(s.fechaInicio) : "")).join(", ")}
         </p>
-        <p className="text-sm tabular-nums text-muted-foreground">{franjasStr(g.franjas)}</p>
-        <div className="mt-2">
+        <p className="text-sm tabular-nums text-muted-foreground" data-cy="schedule-group-ranges">
+          {franjasStr(g.franjas)}
+        </p>
+        <div className="mt-2" data-cy="schedule-group-status">
           {g.tipo === "permanent" ? (
             g.fechaInicio && g.fechaInicio > today ? (
               <Badge variant="info">Desde {formatFechaCompacta(g.fechaInicio)}</Badge>
@@ -360,17 +365,17 @@ function GroupItem({
       </div>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon-sm" aria-label="Acciones del horario">
+          <Button variant="ghost" size="icon-sm" aria-label="Acciones del horario" data-cy="schedule-actions">
             <MoreVertical aria-hidden="true" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          <DropdownMenuItem onSelect={() => onEdit(g)}>
+          <DropdownMenuItem onSelect={() => onEdit(g)} data-cy="schedule-edit">
             <Pencil aria-hidden="true" />
             Editar
           </DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem variant="destructive" onSelect={() => onDelete(g)}>
+          <DropdownMenuItem variant="destructive" onSelect={() => onDelete(g)} data-cy="schedule-delete">
             <Trash2 aria-hidden="true" />
             Eliminar
           </DropdownMenuItem>
