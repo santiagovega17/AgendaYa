@@ -10,6 +10,8 @@ declare global {
       prepararAgenda(escenario?: Escenario): Chainable<AgendaPreparada>;
       /** Inicia sesión como administrador de test y deja abierta la ruta indicada del panel. */
       loginAdmin(ruta?: string): Chainable<void>;
+      /** Navega el calendario visible hasta el mes de `fecha` (yyyy-MM-dd) y devuelve el botón de ese día. */
+      mostrarDia(fecha: string): Chainable<JQuery<HTMLElement>>;
       /** Navega el calendario visible hasta el mes de `fecha` (yyyy-MM-dd) y hace clic en ese día. */
       elegirDia(fecha: string): Chainable<void>;
     }
@@ -60,21 +62,22 @@ Cypress.Commands.add("loginAdmin", (ruta = "/admin/dashboard") => {
   );
 });
 
-Cypress.Commands.add("elegirDia", (fecha: string) => {
+Cypress.Commands.add("mostrarDia", (fecha: string) => {
   const selector = `[data-cy="calendar-day"][data-fecha="${fecha}"]`;
   const buscar = (intentos: number): void => {
     cy.get("body").then(($body) => {
-      if ($body.find(selector).length > 0) {
-        cy.get(selector).click();
-      } else if (intentos > 0) {
-        cy.dataCy("calendar-next").click();
-        buscar(intentos - 1);
-      } else {
-        throw new Error(`El día ${fecha} no aparece en el calendario.`);
-      }
+      if ($body.find(selector).length > 0) return;
+      if (intentos === 0) throw new Error(`El día ${fecha} no aparece en el calendario.`);
+      cy.dataCy("calendar-next").click();
+      buscar(intentos - 1);
     });
   };
   buscar(12);
+  return cy.get(selector);
+});
+
+Cypress.Commands.add("elegirDia", (fecha: string) => {
+  cy.mostrarDia(fecha).click();
 });
 
 export {};
