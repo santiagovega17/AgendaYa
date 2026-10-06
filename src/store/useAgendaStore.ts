@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { format } from "date-fns";
+import { activeBookingsOn, isActive } from "@/lib/booking/bookings";
 import { getSupabase } from "@/lib/supabase/client";
 import { errorMessage } from "@/lib/supabase/errors";
 import {
@@ -136,8 +137,6 @@ const emptyData = (): AgendaData => ({
   bookings: [],
   notifications: [],
 });
-
-const isActive = (b: Booking) => b.estado === "pendiente" || b.estado === "confirmada";
 
 let authSubscribed = false;
 
@@ -523,7 +522,7 @@ export const useAgendaStore = create<AgendaStore>()((set, get) => {
 
       if ((data as { accion: string }).accion === "requiere_confirmacion") {
         await fetchBookings();
-        const affected = get().bookings.filter((b) => b.fecha === fecha && isActive(b));
+        const affected = activeBookingsOn(get().bookings, fecha);
         return { action: "needs_confirm", bookings: affected };
       }
 
@@ -556,7 +555,7 @@ export const useAgendaStore = create<AgendaStore>()((set, get) => {
         const all = get().bookings;
         out.needsConfirm = out.needsConfirm.map(({ fecha }) => ({
           fecha,
-          bookings: all.filter((b) => b.fecha === fecha && isActive(b)),
+          bookings: activeBookingsOn(all, fecha),
         }));
       }
       if (out.blocked.length > 0) await fetchBlockedDates();

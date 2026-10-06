@@ -2,7 +2,6 @@
 
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -19,27 +18,15 @@ import {
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toFechaStr } from "@/lib/format";
+import { maxActiveBookingsPerDay } from "@/lib/booking/bookings";
 import type { BookingSettings } from "@/lib/types";
+import {
+  INTERVALOS,
+  LIMITE_CONFLICTO,
+  settingsSchema as schema,
+  type SettingsFormValues as Values,
+} from "@/lib/validation/settings";
 import { useAgendaStore } from "@/store/useAgendaStore";
-
-const INTERVALOS = [0, 5, 10, 15, 30, 45, 60];
-const LIMITE_FORMATO = "El límite debe ser un número entero mayor a cero";
-const LIMITE_CONFLICTO = "El nuevo límite es inferior a la cantidad de reservas ya existentes para el día";
-
-const schema = z.object({
-  intervaloMin: z.number(),
-  antelacionMinHoras: z
-    .number({ error: "Ingresá un número de horas." })
-    .int("Usá horas enteras.")
-    .min(0, "No puede ser negativa."),
-  antelacionMaxDias: z
-    .number({ error: "Ingresá un número de días." })
-    .int("Usá días enteros.")
-    .min(1, "Tiene que ser al menos 1 día."),
-  limiteReservasDia: z.number({ error: LIMITE_FORMATO }).int(LIMITE_FORMATO).min(1, LIMITE_FORMATO),
-});
-
-type Values = z.infer<typeof schema>;
 
 const toMin = (t: string) => {
   const [h, m] = t.split(":").map(Number);
@@ -113,15 +100,7 @@ export function SettingsCard() {
   }
 
   const onSubmit = async (values: Values) => {
-    const today = toFechaStr(new Date());
-    const perDay = new Map<string, number>();
-    for (const b of bookings) {
-      if (b.fecha < today || (b.estado !== "pendiente" && b.estado !== "confirmada")) continue;
-      const key = `${b.fecha}|${b.eventTypeId}`;
-      perDay.set(key, (perDay.get(key) ?? 0) + 1);
-    }
-    const maxExistente = Math.max(0, ...perDay.values());
-    if (values.limiteReservasDia < maxExistente) {
+    if (values.limiteReservasDia < maxActiveBookingsPerDay(bookings, toFechaStr(new Date()))) {
       form.setError("limiteReservasDia", { message: LIMITE_CONFLICTO }, { shouldFocus: true });
       return;
     }
