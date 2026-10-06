@@ -1,73 +1,103 @@
+import { format } from "date-fns";
+import { es } from "date-fns/locale";
+import { diaHabil } from "../support/fechas";
+
 /**
- * Integrante: [Julian Serralta]
- * Requerimiento: AYA-M04-RF03 y AYA-M04-RF04 · Ingreso de datos personales y validación
- * Casos de prueba: CP-003 (positivo) y CP-004 (negativo)
+ * Requerimiento: AYA-M04-RF03 y AYA-M04-RF04 · Ingreso de datos personales y confirmación de la reserva
+ * Casos del TP5: CP-003 (positivo) y CP-004 (negativo)
  */
 describe("M04 - Ingreso de datos personales y validaciones en la reserva", () => {
   const ERROR_EMAIL = "Ingresá un email válido, por ejemplo nombre@correo.com";
+  const fecha = diaHabil(7);
+  const dia = format(new Date(`${fecha}T00:00:00`), "EEEE d 'de' MMMM", { locale: es });
+  const fechaLarga = dia.charAt(0).toUpperCase() + dia.slice(1);
+  // El contador queda fijo arriba: el offset deja visible el elemento debajo de él.
+  const captura = (nombre: string, desde = "guest-slot-summary") => {
+    cy.dataCy(desde).scrollIntoView({ offset: { top: -90, left: 0 } });
+    cy.screenshot(nombre, { capture: "viewport" });
+  };
+
+  const elegirHorario = () => {
+    cy.visit("/agenda/laura-perez");
+    cy.dataCy("event-option").first().click();
+    cy.elegirDia(fecha);
+    cy.dataCy("slot-option").filter('[data-hora="10:00"]').click();
+    cy.dataCy("confirm-slot").click();
+  };
 
   beforeEach(() => {
-    // Arrange: Preparamos el flujo simulando que el usuario ya eligió un evento y horario,
-    // y se encuentra en el paso "Tus datos" con el contador activo según los prerrequisitos.
-    cy.viewport(1280, 720);
-    cy.visit("/reserva/datos"); // Ajustar la ruta pública según las rutas de tu proyecto
+    // Arrange (común): agenda de test sin reservas y el invitado en el paso "Tus datos" con las 10:00 elegidas
+    cy.prepararAgenda();
+    elegirHorario();
+    cy.dataCy("booking-step-guest").should("be.visible");
   });
 
-  it("CP-003: Ingresar datos personales válidos y confirmar la reserva exitosamente", () => {
-    // Act: Paso 1 - Verificar pantalla inicial del paso
-    cy.get(".summary-info").should("contain.text", "Consulta general");
-    cy.get(".banner-guarantee").should("contain.text", "Te guardamos este horario por");
-    cy.get("button[data-cy='confirm-reservation']").should("be.disabled")
-      .and("contain.text", "Completá tus datos para confirmar.");
+  it("CP-003: ingresa datos personales válidos y confirma la reserva", () => {
+    // Arrange: resumen del turno, contador activo y botón deshabilitado
+    cy.dataCy("guest-slot-summary")
+      .should("contain.text", "Consulta general")
+      .and("contain.text", fechaLarga)
+      .and("contain.text", "10:00 a 10:30 h");
+    cy.dataCy("countdown-timer").invoke("text").should("match", /^\d{1,2}:\d{2}$/);
+    cy.dataCy("confirm-booking").should("be.disabled");
+    cy.dataCy("guest-form-hint").should("have.text", "Completá tus datos para confirmar.");
 
-    // Act: Paso 2 y 3 - Ingresar nombre, apellido y email válidos
-    cy.get("input[data-cy='input-nombre']").clear().type("Juan");
-    cy.get("input[data-cy='input-apellido']").clear().type("Hernandez");
-    cy.get("input[data-cy='input-email']").clear().type("JHernandez@gmail.com");
-    cy.get(".error-message").should("not.exist");
+    // Act: completar nombre, apellido, email y teléfono válidos
+    cy.dataCy("guest-nombre").type("Juan");
+    cy.dataCy("guest-apellido").type("Hernandez");
+    cy.dataCy("guest-email").type("JHernandez@gmail.com");
+    cy.dataCy("guest-telefono").type("54 9 261 846 7920");
 
-    // Act: Paso 4 - Ingresar teléfono válido (incluyendo espacios permitidos)
-    cy.get("input[data-cy='input-telefono']").clear().type("54 9 261 846 7920");
-    
-    // Assert: El botón de confirmar se habilita y cambia su texto
-    cy.get("button[data-cy='confirm-reservation']")
-      .should("not.be.disabled")
-      .and("not.contain.text", "Completá tus datos para confirmar.");
+    // Assert: sin errores y con el botón habilitado
+    cy.get('[data-cy$="-error"]').should("not.exist");
+    cy.dataCy("guest-form-hint").should("not.exist");
+    cy.dataCy("confirm-booking").should("be.enabled");
+    captura("CP-003-1-datos-validos");
 
-    // Act: Paso 5 - Hacer click en "Confirmar reserva"
-    cy.get("button[data-cy='confirm-reservation']").click();
+    // Act: confirmar la reserva
+    cy.dataCy("confirm-booking").click();
 
-    // Assert: Se muestra el comprobante de éxito con los datos correctos
-    cy.get(".success-receipt").should("be.visible").and("contain.text", "¡Reserva confirmada!");
-    cy.get(".success-receipt").should("contain.text", "Consulta general");
-    cy.get(".success-receipt").should("contain.text", "Juan Hernandez");
+    // Assert: comprobante con el número de reserva y los datos del turno
+    cy.dataCy("booking-success-title").should("have.text", "¡Reserva confirmada!");
+    cy.dataCy("booking-number").invoke("text").should("match", /^AYA-\d{4}$/);
+    cy.dataCy("booking-activity").should("have.text", "Consulta general");
+    cy.dataCy("booking-date").should("have.text", fechaLarga);
+    cy.dataCy("booking-time").should("have.text", "10:00 a 10:30 h");
+    cy.dataCy("booking-admin").should("have.text", "Dra. Laura Pérez");
+    cy.dataCy("booking-guest-name").should("have.text", "Juan Hernandez");
+    captura("CP-003-2-reserva-confirmada", "booking-success-title");
+
+    // Assert: la reserva quedó registrada, así que las 10:00 de ese día ya no se ofrecen
+    cy.visit("/agenda/laura-perez");
+    cy.dataCy("event-option").first().click();
+    cy.elegirDia(fecha);
+    cy.dataCy("slot-option").filter('[data-hora="10:00"]').should("be.disabled");
   });
 
-  it("CP-004: Rechazar un email sin '@' en los datos personales", () => {
-    // Act: Paso 1 y 2 - Ingresar nombre, apellido y un email inválido (sin '@')
-    cy.get("input[data-cy='input-nombre']").clear().type("Juan");
-    cy.get("input[data-cy='input-apellido']").clear().type("Hernandez");
-    cy.get("input[data-cy='input-email']").clear().type("JHernandez.gmail.com");
-    
-    // Act: Salir del campo email haciendo foco en teléfono (blur)
-    cy.get("input[data-cy='input-telefono']").click();
+  it("CP-004: rechaza un email sin '@' en los datos personales", () => {
+    // Act: completar nombre, apellido y un email sin "@", y pasar al teléfono
+    cy.dataCy("guest-nombre").type("Juan");
+    cy.dataCy("guest-apellido").type("Hernandez");
+    cy.dataCy("guest-email").type("JHernandez.gmail.com");
+    cy.dataCy("guest-telefono").focus();
 
-    // Assert: El sistema muestra el mensaje de error en rojo debajo del email
-    cy.get("input[data-cy='input-email']").parent().find(".error-message")
-      .should("be.visible")
-      .and("contain.text", ERROR_EMAIL);
+    // Assert: error visible debajo del email
+    cy.dataCy("guest-email-error").should("be.visible").and("have.text", ERROR_EMAIL);
 
-    // Act: Paso 3 - Ingresar el teléfono
-    cy.get("input[data-cy='input-telefono']").clear().type("54 9 261 846 7920");
+    // Act: completar el teléfono
+    cy.dataCy("guest-telefono").type("54 9 261 846 7920");
 
-    // Assert: El botón de confirmar sigue deshabilitado
-    cy.get("button[data-cy='confirm-reservation']").should("be.disabled");
+    // Assert: el botón sigue deshabilitado y se mantiene el aviso
+    cy.dataCy("confirm-booking").should("be.disabled");
+    cy.dataCy("guest-form-hint").should("have.text", "Completá tus datos para confirmar.");
+    captura("CP-004-1-email-invalido");
 
-    // Act: Paso 4 - Intentar hacer clic en "Confirmar reserva"
-    cy.get("button[data-cy='confirm-reservation']").click({ force: true });
+    // Act: intentar confirmar igual
+    cy.dataCy("confirm-booking").click({ force: true });
 
-    // Assert: El sistema permanece en el mismo paso y no registra nada
-    cy.url().should("include", "/reserva/datos");
-    cy.get(".success-receipt").should("not.exist");
+    // Assert: sigue en "Tus datos" y no se registró ninguna reserva
+    cy.dataCy("booking-step-guest").should("be.visible");
+    cy.dataCy("booking-success").should("not.exist");
+    captura("CP-004-2-sin-confirmar");
   });
 });
