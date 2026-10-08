@@ -135,14 +135,14 @@ Se dispara en pull requests hacia `main`, `develop` y `hotfix/**`, y en cada pus
 
 ### Nivel deseable
 
-**Protección de ramas.** Hay que activarla en GitHub, en el repositorio público, sobre `main` y `develop`:
+**Protección de ramas.** Está activa en el ruleset [proteger main](https://github.com/santiagovega17/AgendaYa/rules/24750196), sobre `main` y `develop`:
 
-- No se fusiona con el check `calidad` en rojo o pendiente.
+- No se fusiona con el check `calidad` en rojo o pendiente, y la rama tiene que estar actualizada.
 - Exige una aprobación.
-- El autor del PR no puede ser el único que aprueba.
-- No se puede hacer push directo a `main` ni a `develop`.
+- El último push lo tiene que aprobar alguien distinto de quien lo subió.
+- No se puede hacer push directo ni force push, y no se puede borrar la rama.
 
-Eso no se puede dejar en un archivo del repositorio: es una regla del remoto. Hasta que el equipo la active en Settings → Branches, el plan y el código ya la exigen, pero GitHub todavía no la bloquea.
+Esa regla no vive en un archivo del repositorio. La cargó el administrador en Settings → Rulesets.
 
 **Tests E2E de Cypress.** No se ejecutan en el pipeline. Cada caso entra a Supabase con el administrador de test, borra y vuelve a cargar su agenda, y necesita la app en `http://localhost:3000` más `E2E_ADMIN_EMAIL` y `E2E_ADMIN_PASSWORD`. Correrlos en cada PR alarga el SLA del hotfix y acopla el correctivo a un servicio externo. Se siguen corriendo en local con `npm run cy:run` antes de una demo o de un cambio de interfaz. El incidente INC-0417 queda cubierto por el test unitario, que no necesita navegador ni base de datos.
 
