@@ -1,11 +1,14 @@
+import { fromZonedTime } from "date-fns-tz";
+
 const escape = (s: string) => s.replace(/[\\,;]/g, (c) => `\\${c}`).replace(/\n/g, "\\n");
 
-/**
- * Hora de pared, sin zona. Un celular en otro huso la interpreta como hora local
- * y el turno aparece corrido. INC-0417.
- */
-export function utcStamp(fecha: string, hora: string, _timezone: string) {
-  return `${fecha.replace(/-/g, "")}T${hora.replace(":", "")}00`;
+/** Instante UTC de una hora de pared en la zona del administrador (`20261019T130000Z`). */
+export function utcStamp(fecha: string, hora: string, timezone: string) {
+  const utc = fromZonedTime(`${fecha}T${hora}:00`, timezone);
+  return utc
+    .toISOString()
+    .replace(/[-:]/g, "")
+    .replace(/\.\d{3}Z$/, "Z");
 }
 
 export function buildIcs(params: {
@@ -15,6 +18,7 @@ export function buildIcs(params: {
   fecha: string;
   horaInicio: string;
   horaFin: string;
+  /** Zona del administrador. El invitado puede estar en otra. */
   timezone: string;
 }) {
   const body = [
@@ -36,7 +40,7 @@ export function buildIcs(params: {
   return body;
 }
 
-/** Descarga un .ics. La hora sigue flotante: no se ancla a la zona del administrador. */
+/** Descarga un .ics con el turno anclado a la zona del administrador. */
 export function downloadIcs(params: {
   uid: string;
   titulo: string;
