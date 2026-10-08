@@ -150,14 +150,19 @@ Eso no se puede dejar en un archivo del repositorio: es una regla del remoto. Ha
 
 No se aborda. No hay proyecto de Firebase Hosting ni secretos de deploy. Un paso de despliegue sin esas credenciales fallaría siempre y bloquearía el hotfix. El despliegue a producción queda como el merge a `main`, con la aprobación descripta en la sección 2.6.
 
-### Evidencia local de los controles
+### Evidencia
 
-En esta máquina, con Node v22.23.3:
+En esta máquina, con Node v22.23.3, `npm test` corre 8 archivos y 55 tests. Con el arreglo, los 3 de `src/lib/ics.test.ts` pasan. Contra la hora flotante, fallan.
 
-- `npm test`: 8 archivos, 55 tests, todos pasan. Incluye los 3 de `src/lib/ics.test.ts`.
-- El test del incidente, contra el `.ics` viejo (`DTSTART` sin `Z`), falla. Contra el código actual, pasa.
+El pull request es el [#18](https://github.com/santiagovega17/AgendaYa/pull/18), rama `hotfix/inc-0417-confirmacion-zona`.
 
-Las capturas del pipeline en GitHub (una corrida en rojo y otra en verde) se sacan cuando el workflow está en el remoto: primero un PR con el test nuevo y sin el arreglo, después el PR con el arreglo. Este informe no puede inventar esas pantallas.
+La corrida en rojo es la [#46](https://github.com/santiagovega17/AgendaYa/actions/runs/37836737496), commit `f7f5d81`: el test nuevo ya estaba y el calendario seguía en hora flotante. Formato y linter pasaron. Los tests unitarios fallaron. El build no llegó a ejecutarse.
+
+![Pipeline en rojo. Fallan los tests unitarios de INC-0417.](pipeline-rojo.png)
+
+La corrida en verde es la [#48](https://github.com/santiagovega17/AgendaYa/actions/runs/37836983550), commit `e1c7ec3`: el `.ics` queda anclado a UTC. Formato, linter, tests unitarios y build pasaron.
+
+![Pipeline en verde. Los cuatro controles pasan.](pipeline-verde.png)
 
 ---
 
