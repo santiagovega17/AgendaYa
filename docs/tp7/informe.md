@@ -12,36 +12,15 @@ Repositorio: https://github.com/santiagovega17/AgendaYa
 
 ---
 
-## 1. Incidente
-
-**INC-0417 · Severidad: crítica · Módulo: M04 Booking público**
-
-Desde el último despliegue, invitados que reservan desde el celular y están en un huso distinto al del administrador reciben la confirmación con el horario desplazado una hora. SLA de resolución: 4 horas. Reportado por Soporte N1.
-
-### El defecto ya estaba en el código
-
-No hizo falta inyectarlo. La pantalla de confirmación muestra `horaInicio` y `horaFin` como texto (`10:00 a 10:30 h`) y ahí la hora es la correcta. El defecto está en el archivo que el invitado descarga con **Agregar a mi calendario**.
-
-`downloadIcs` armaba el evento con hora flotante, sin zona:
-
-```text
-DTSTART:20261019T100000
-DTEND:20261019T103000
-```
-
-Un calendario de celular interpreta esa hora en la zona del teléfono, no en la del administrador. Buenos Aires es UTC−3 y La Paz es UTC−4. Para un turno de las 10:00 en Buenos Aires el celular de La Paz mostraba las 10:00 locales, una hora más tarde que el instante real (que en La Paz son las 09:00).
-
-### El cambio que lo corrige
-
-`src/lib/ics.ts` convierte la hora de pared a UTC con la zona del administrador (`fromZonedTime` de `date-fns-tz`) antes de escribir el `.ics`. Las 10:00 de `America/Argentina/Buenos_Aires` quedan `DTSTART:20261019T130000Z`. `ConfirmationStep` le pasa `profile.timezone`.
-
-El test nuevo es `src/lib/ics.test.ts`. Sobre el código anterior falla: espera `DTSTART:20261019T130000Z` y el archivo decía `DTSTART:20261019T100000`. Con el arreglo, los tres casos pasan.
-
----
-
 ## 2. Plan de desarrollo y mantenimiento del hotfix
 
 El hotfix es un correctivo urgente sobre lo que está en producción. No entra en el ciclo planificado de versiones. Igual recorre revisión, tests automáticos y una rama protegida. El SLA de 4 horas no saltea esos controles: los acota.
+
+### Descripción del defecto
+
+El defecto ya estaba en el código: no hizo falta inyectarlo. La pantalla de confirmación muestra la hora correcta (`10:00 a 10:30 h`). El archivo que el invitado descarga con **Agregar a mi calendario** escribía la hora flotante, sin zona (`DTSTART:20261019T100000`). Un celular en otra zona la leía como hora local y el turno aparecía corrido una hora.
+
+`src/lib/ics.ts` convierte esa hora a UTC con la zona del administrador (`fromZonedTime`). Las 10:00 de Buenos Aires quedan `DTSTART:20261019T130000Z`. `ConfirmationStep` le pasa `profile.timezone`. El test `src/lib/ics.test.ts` falla si el archivo vuelve a la hora flotante y pasa con el arreglo.
 
 ### 2.1 Gestión del cambio
 
@@ -135,14 +114,14 @@ Se dispara en pull requests hacia `main`, `develop` y `hotfix/**`, y en cada pus
 
 ### Nivel deseable
 
-**Protección de ramas.** Hay que activarla en GitHub, en el repositorio público, sobre `main` y `develop`:
+**Protección de ramas.** Está activa en el ruleset [proteger main](https://github.com/santiagovega17/AgendaYa/rules/24750196), sobre `main` y `develop`:
 
-- No se fusiona con el check `calidad` en rojo o pendiente.
+- No se fusiona con el check `calidad` en rojo o pendiente, y la rama tiene que estar actualizada.
 - Exige una aprobación.
-- El autor del PR no puede ser el único que aprueba.
-- No se puede hacer push directo a `main` ni a `develop`.
+- El último push lo tiene que aprobar alguien distinto de quien lo subió.
+- No se puede hacer push directo ni force push, y no se puede borrar la rama.
 
-Eso no se puede dejar en un archivo del repositorio: es una regla del remoto. Hasta que el equipo la active en Settings → Branches, el plan y el código ya la exigen, pero GitHub todavía no la bloquea.
+Esa regla no vive en un archivo del repositorio. La cargó el administrador en Settings → Rulesets.
 
 **Tests E2E de Cypress.** No se ejecutan en el pipeline. Cada caso entra a Supabase con el administrador de test, borra y vuelve a cargar su agenda, y necesita la app en `http://localhost:3000` más `E2E_ADMIN_EMAIL` y `E2E_ADMIN_PASSWORD`. Correrlos en cada PR alarga el SLA del hotfix y acopla el correctivo a un servicio externo. Se siguen corriendo en local con `npm run cy:run` antes de una demo o de un cambio de interfaz. El incidente INC-0417 queda cubierto por el test unitario, que no necesita navegador ni base de datos.
 
