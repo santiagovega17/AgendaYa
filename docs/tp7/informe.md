@@ -12,36 +12,15 @@ Repositorio: https://github.com/santiagovega17/AgendaYa
 
 ---
 
-## 1. Incidente
-
-**INC-0417 · Severidad: crítica · Módulo: M04 Booking público**
-
-Desde el último despliegue, invitados que reservan desde el celular y están en un huso distinto al del administrador reciben la confirmación con el horario desplazado una hora. SLA de resolución: 4 horas. Reportado por Soporte N1.
-
-### El defecto ya estaba en el código
-
-No hizo falta inyectarlo. La pantalla de confirmación muestra `horaInicio` y `horaFin` como texto (`10:00 a 10:30 h`) y ahí la hora es la correcta. El defecto está en el archivo que el invitado descarga con **Agregar a mi calendario**.
-
-`downloadIcs` armaba el evento con hora flotante, sin zona:
-
-```text
-DTSTART:20261019T100000
-DTEND:20261019T103000
-```
-
-Un calendario de celular interpreta esa hora en la zona del teléfono, no en la del administrador. Buenos Aires es UTC−3 y La Paz es UTC−4. Para un turno de las 10:00 en Buenos Aires el celular de La Paz mostraba las 10:00 locales, una hora más tarde que el instante real (que en La Paz son las 09:00).
-
-### El cambio que lo corrige
-
-`src/lib/ics.ts` convierte la hora de pared a UTC con la zona del administrador (`fromZonedTime` de `date-fns-tz`) antes de escribir el `.ics`. Las 10:00 de `America/Argentina/Buenos_Aires` quedan `DTSTART:20261019T130000Z`. `ConfirmationStep` le pasa `profile.timezone`.
-
-El test nuevo es `src/lib/ics.test.ts`. Sobre el código anterior falla: espera `DTSTART:20261019T130000Z` y el archivo decía `DTSTART:20261019T100000`. Con el arreglo, los tres casos pasan.
-
----
-
 ## 2. Plan de desarrollo y mantenimiento del hotfix
 
 El hotfix es un correctivo urgente sobre lo que está en producción. No entra en el ciclo planificado de versiones. Igual recorre revisión, tests automáticos y una rama protegida. El SLA de 4 horas no saltea esos controles: los acota.
+
+### Descripción del defecto
+
+El defecto ya estaba en el código: no hizo falta inyectarlo. La pantalla de confirmación muestra la hora correcta (`10:00 a 10:30 h`). El archivo que el invitado descarga con **Agregar a mi calendario** escribía la hora flotante, sin zona (`DTSTART:20261019T100000`). Un celular en otra zona la leía como hora local y el turno aparecía corrido una hora.
+
+`src/lib/ics.ts` convierte esa hora a UTC con la zona del administrador (`fromZonedTime`). Las 10:00 de Buenos Aires quedan `DTSTART:20261019T130000Z`. `ConfirmationStep` le pasa `profile.timezone`. El test `src/lib/ics.test.ts` falla si el archivo vuelve a la hora flotante y pasa con el arreglo.
 
 ### 2.1 Gestión del cambio
 
