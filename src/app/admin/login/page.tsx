@@ -215,9 +215,7 @@ function AuthForm({ mode, onModeChange }: { mode: Mode; onModeChange: (m: Mode) 
         )}
       </p>
 
-      {mode === "login" && DEMO_EMAIL && DEMO_PASSWORD && (
-        <DemoCard onFill={fillDemo} />
-      )}
+      {mode === "login" && DEMO_EMAIL && DEMO_PASSWORD && <DemoCard onFill={fillDemo} />}
     </>
   );
 }

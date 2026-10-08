@@ -1,15 +1,16 @@
 name: Pipeline de CI
 
-# Se dispara en PRs hacia main, en cada push a main y manualmente desde Actions
+# El plan de hotfix hace pasar el cambio por main y develop.
+# La rama hotfix/* también corre el pipeline antes de abrir el PR.
 on:
   push:
-    branches: [ main ]
+    branches: [main, develop, "hotfix/**"]
   pull_request:
-    branches: [ main ]
+    branches: [main, develop, "hotfix/**"]
   workflow_dispatch:
 
 jobs:
-  build-and-test:
+  calidad:
     runs-on: ubuntu-latest
 
     steps:
@@ -19,17 +20,23 @@ jobs:
       - name: Configurar Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "22"
           cache: "npm"
 
       - name: Instalar dependencias
         run: npm ci
         env:
-          # Los tests E2E se corren en local contra Supabase; en CI no hace falta el binario de Cypress
+          # Los E2E de Cypress corren en local contra Supabase. En CI no se baja el binario.
           CYPRESS_INSTALL_BINARY: 0
 
-      - name: Correr pruebas unitarias
-        run: npm run test
+      - name: Verificar formato
+        run: npm run format:check
 
-      - name: Construir proyecto (build)
+      - name: Verificar linter
+        run: npm run lint
+
+      - name: Tests unitarios
+        run: npm test
+
+      - name: Build
         run: npm run build

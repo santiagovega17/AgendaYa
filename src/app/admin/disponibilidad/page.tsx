@@ -79,7 +79,7 @@ function DisponibilidadContent() {
     for (const s of weeklySchedules) {
       if (s.tipo === "once" && s.fechaInicio && s.fechaInicio < today) continue;
       const franjas = [...s.franjas].sort((a, b) => a.inicio.localeCompare(b.inicio));
-      const key = `${s.tipo}|${s.tipo === "permanent" ? s.fechaInicio ?? "" : "once"}|${franjasStr(franjas)}`;
+      const key = `${s.tipo}|${s.tipo === "permanent" ? (s.fechaInicio ?? "") : "once"}|${franjasStr(franjas)}`;
       const g = map.get(key);
       if (g) {
         g.schedules.push(s);
@@ -114,7 +114,7 @@ function DisponibilidadContent() {
   const handleSave = async (
     values: { dias: number[]; franjas: TimeRange[] },
     tipo: ScheduleType,
-    fechaInicio: string
+    fechaInicio: string,
   ) => {
     const franjas = [...values.franjas].sort((a, b) => a.inicio.localeCompare(b.inicio));
     const errores: string[] = [];

@@ -38,7 +38,9 @@ describe("M04 - Ingreso de datos personales y validaciones en la reserva", () =>
       .should("contain.text", "Consulta general")
       .and("contain.text", fechaLarga)
       .and("contain.text", "10:00 a 10:30 h");
-    cy.dataCy("countdown-timer").invoke("text").should("match", /^\d{1,2}:\d{2}$/);
+    cy.dataCy("countdown-timer")
+      .invoke("text")
+      .should("match", /^\d{1,2}:\d{2}$/);
     cy.dataCy("confirm-booking").should("be.disabled");
     cy.dataCy("guest-form-hint").should("have.text", "Completá tus datos para confirmar.");
 
@@ -59,7 +61,9 @@ describe("M04 - Ingreso de datos personales y validaciones en la reserva", () =>
 
     // Assert: comprobante con el número de reserva y los datos del turno
     cy.dataCy("booking-success-title").should("have.text", "¡Reserva confirmada!");
-    cy.dataCy("booking-number").invoke("text").should("match", /^AYA-\d{4}$/);
+    cy.dataCy("booking-number")
+      .invoke("text")
+      .should("match", /^AYA-\d{4}$/);
     cy.dataCy("booking-activity").should("have.text", "Consulta general");
     cy.dataCy("booking-date").should("have.text", fechaLarga);
     cy.dataCy("booking-time").should("have.text", "10:00 a 10:30 h");

@@ -1,11 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type {
-  Booking,
-  BookingSettings,
-  EventType,
-  SlotLock,
-  WeeklySchedule,
-} from "@/lib/types";
+import type { Booking, BookingSettings, EventType, SlotLock, WeeklySchedule } from "@/lib/types";
 import { generateSlots, makeSlotId, getAvailableDates } from "./generateSlots";
 
 const eventType: EventType = {
@@ -64,9 +58,7 @@ describe("generateSlots", () => {
   });
 
   it("no genera slots en fechas bloqueadas, fuera de la ventana de antelación o con límite diario alcanzado", () => {
-    const blocked = generateSlots(
-      baseParams({ blockedDates: [{ fecha: "2026-06-17", motivo: "Feriado" }] })
-    );
+    const blocked = generateSlots(baseParams({ blockedDates: [{ fecha: "2026-06-17", motivo: "Feriado" }] }));
     expect(blocked).toEqual([]);
 
     const tooFar = generateSlots(
@@ -81,7 +73,7 @@ describe("generateSlots", () => {
             fechaInicio: "2026-01-01",
           },
         ],
-      })
+      }),
     );
     expect(tooFar).toEqual([]);
 
@@ -176,7 +168,7 @@ describe("generateSlots", () => {
         bookings,
         locks,
         sessionId: "my-session",
-      })
+      }),
     );
 
     const byHour = Object.fromEntries(slots.map((s) => [s.horaInicio, s]));
@@ -264,7 +256,7 @@ describe("generateSlots", () => {
         locks,
         sessionId: "my-session",
         now: new Date("2026-06-16T08:00:00Z"),
-      })
+      }),
     );
 
     expect(slots.find((s) => s.horaInicio === "09:00")?.disponible).toBe(true);
@@ -275,7 +267,7 @@ describe("generateSlots", () => {
       baseParams({
         fecha: "2026-06-15",
         now: new Date("2026-06-16T08:00:00Z"),
-      })
+      }),
     );
 
     expect(slots).toEqual([]);
@@ -286,7 +278,7 @@ describe("generateSlots", () => {
       baseParams({
         settings: { ...settings, antelacionMinHoras: 0 },
         now: new Date(2026, 5, 17, 9, 30),
-      })
+      }),
     );
 
     expect(slots.map((s) => s.horaInicio)).toEqual(["09:00", "09:40", "10:20", "11:00"]);
@@ -316,7 +308,7 @@ describe("generateSlots", () => {
       baseParams({
         fecha: "2026-06-18",
         now: new Date("2026-06-16T08:00:00Z"),
-      })
+      }),
     );
 
     expect(slots).toEqual([]);
@@ -338,7 +330,7 @@ describe("generateSlots", () => {
       baseParams({
         locks,
         sessionId: "my-session",
-      })
+      }),
     ).find((s) => s.horaInicio === "09:00");
 
     expect(slot?.disponible).toBe(true);
@@ -355,23 +347,23 @@ describe("generateSlots", () => {
             diaSemana: 3,
             franjas: [
               { inicio: "09:00", fin: "10:00" },
-              { inicio: "14:00", fin: "15:00" }
+              { inicio: "14:00", fin: "15:00" },
             ],
             tipo: "permanent",
             fechaInicio: "2026-01-01",
           },
-        ]
-      })
+        ],
+      }),
     );
 
-    const horasDisponibles = slots.map(s => s.horaInicio);
-    expect(horasDisponibles.some(h => h.startsWith("09:"))).toBe(true);
-    expect(horasDisponibles.some(h => h.startsWith("14:"))).toBe(true);
-    expect(horasDisponibles.some(h => h.startsWith("11:"))).toBe(false);
+    const horasDisponibles = slots.map((s) => s.horaInicio);
+    expect(horasDisponibles.some((h) => h.startsWith("09:"))).toBe(true);
+    expect(horasDisponibles.some((h) => h.startsWith("14:"))).toBe(true);
+    expect(horasDisponibles.some((h) => h.startsWith("11:"))).toBe(false);
   });
 
   it("Ingreso de datos personales: valida que los datos del invitado cumplan con el formato requerido (AYA-M04-RF03)", () => {
-    const validarDatosInvitado = (invitado: any) => {
+    const validarDatosInvitado = (invitado: { nombre?: string; email?: string; telefono?: string }) => {
       if (!invitado.nombre || invitado.nombre.trim() === "") return false;
       if (!invitado.email || !invitado.email.includes("@")) return false;
       if (invitado.telefono && !/^\d+$/.test(invitado.telefono)) return false;
@@ -384,8 +376,8 @@ describe("generateSlots", () => {
     expect(validarDatosInvitado({ nombre: "Juan", email: "juan@test.com", telefono: "1234a567" })).toBe(false);
   });
 
-it("Ingreso de datos personales: valida que la nota opcional no exceda el límite de caracteres", () => {
-    const validarDatosInvitado = (invitado: any) => {
+  it("Ingreso de datos personales: valida que la nota opcional no exceda el límite de caracteres", () => {
+    const validarDatosInvitado = (invitado: { nombre?: string; email?: string; telefono?: string; nota?: string }) => {
       if (!invitado.nombre || invitado.nombre.trim() === "") return false;
       if (!invitado.email || !invitado.email.includes("@")) return false;
       if (invitado.telefono && !/^\d+$/.test(invitado.telefono)) return false;
@@ -394,65 +386,65 @@ it("Ingreso de datos personales: valida que la nota opcional no exceda el límit
     };
 
     const baseGuest = { nombre: "Juan", email: "juan@test.com", telefono: "12345678" };
-    
+
     expect(validarDatosInvitado(baseGuest)).toBe(true);
     expect(validarDatosInvitado({ ...baseGuest, nota: "Nota corta" })).toBe(true);
     expect(validarDatosInvitado({ ...baseGuest, nota: "a".repeat(500) })).toBe(true);
     expect(validarDatosInvitado({ ...baseGuest, nota: "a".repeat(501) })).toBe(false);
   });
 
-
-
   // TEST
-  //  TESTS AGREGADOS PARA EL TP4  
-// =====================================================================
-describe("Reglas de Negocio adicionales", () => {
-//TEST 1
-  it("M02 - Calcula correctamente la hora del siguiente turno aplicando el intervalo (Buffer)", () => {
-    const calcularSiguienteTurno = (horaInicioStr: string, duracionMin: number, intervaloMin: number) => {
-      const [hora, min] = horaInicioStr.split(':').map(Number);
-      const totalMin = hora * 60 + min + duracionMin + intervaloMin;
-      const nextHora = Math.floor(totalMin / 60).toString().padStart(2, '0');
-      const nextMin = (totalMin % 60).toString().padStart(2, '0');
-      return `${nextHora}:${nextMin}`;
-    };
+  //  TESTS AGREGADOS PARA EL TP4
+  // =====================================================================
+  describe("Reglas de Negocio adicionales", () => {
+    //TEST 1
+    it("M02 - Calcula correctamente la hora del siguiente turno aplicando el intervalo (Buffer)", () => {
+      const calcularSiguienteTurno = (horaInicioStr: string, duracionMin: number, intervaloMin: number) => {
+        const [hora, min] = horaInicioStr.split(":").map(Number);
+        const totalMin = hora * 60 + min + duracionMin + intervaloMin;
+        const nextHora = Math.floor(totalMin / 60)
+          .toString()
+          .padStart(2, "0");
+        const nextMin = (totalMin % 60).toString().padStart(2, "0");
+        return `${nextHora}:${nextMin}`;
+      };
 
-    expect(calcularSiguienteTurno("10:00", 30, 15)).toBe("10:45");
-    expect(calcularSiguienteTurno("11:30", 45, 10)).toBe("12:25");
+      expect(calcularSiguienteTurno("10:00", 30, 15)).toBe("10:45");
+      expect(calcularSiguienteTurno("11:30", 45, 10)).toBe("12:25");
+    });
+    //TEST 2
+    it("M02 - Impide que un Usuario Invitado reserve en una fecha bloqueada por el Administrador", () => {
+      const verificarDisponibilidadDia = (fechaSolicitada: string, diasBloqueados: string[]) => {
+        return !diasBloqueados.includes(fechaSolicitada);
+      };
+
+      const feriadosBloqueados = ["2026-12-25", "2026-12-31", "2027-01-01"];
+      expect(verificarDisponibilidadDia("2026-12-25", feriadosBloqueados)).toBe(false);
+      expect(verificarDisponibilidadDia("2026-12-26", feriadosBloqueados)).toBe(true);
+    });
+    // TEST 3
+    it("M08 - Cambia el estado de la reserva a 'Pagado' o 'Cancelado' según la pasarela de pagos", () => {
+      const procesarRespuestaPago = (
+        reserva: { id: number; estado: string },
+        respuestaPasarela: { status?: string },
+      ) => {
+        if (respuestaPasarela.status === "APPROVED") {
+          return { ...reserva, estado: "Pagado" };
+        } else if (respuestaPasarela.status === "REJECTED" || respuestaPasarela.status === "EXPIRED") {
+          return { ...reserva, estado: "Cancelado por falta de pago" };
+        }
+        return reserva;
+      };
+
+      const reservaPendiente = { id: 101, estado: "Pendiente de Pago" };
+
+      expect(procesarRespuestaPago(reservaPendiente, { status: "APPROVED" }).estado).toBe("Pagado");
+      expect(procesarRespuestaPago(reservaPendiente, { status: "EXPIRED" }).estado).toBe("Cancelado por falta de pago");
+    });
   });
-//TEST 2
-  it("M02 - Impide que un Usuario Invitado reserve en una fecha bloqueada por el Administrador", () => {
-    const verificarDisponibilidadDia = (fechaSolicitada: string, diasBloqueados: string[]) => {
-      return !diasBloqueados.includes(fechaSolicitada);
-    };
-
-    const feriadosBloqueados = ["2026-12-25", "2026-12-31", "2027-01-01"];
-    expect(verificarDisponibilidadDia("2026-12-25", feriadosBloqueados)).toBe(false);
-    expect(verificarDisponibilidadDia("2026-12-26", feriadosBloqueados)).toBe(true);
-  });
-// TEST 3
-  it("M08 - Cambia el estado de la reserva a 'Pagado' o 'Cancelado' según la pasarela de pagos", () => {
-    const procesarRespuestaPago = (reserva: any, respuestaPasarela: any) => {
-      if (respuestaPasarela.status === 'APPROVED') {
-        return { ...reserva, estado: 'Pagado' };
-      } else if (respuestaPasarela.status === 'REJECTED' || respuestaPasarela.status === 'EXPIRED') {
-        return { ...reserva, estado: 'Cancelado por falta de pago' };
-      }
-      return reserva; 
-    };
-
-    const reservaPendiente = { id: 101, estado: 'Pendiente de Pago' };
-    
-    expect(procesarRespuestaPago(reservaPendiente, { status: 'APPROVED' }).estado).toBe('Pagado');
-    expect(procesarRespuestaPago(reservaPendiente, { status: 'EXPIRED' }).estado).toBe('Cancelado por falta de pago');
-  });
-
-});
-  
 });
 //  TESTS AGREGADOS PARA EL TP4 - HISTORIAS DE UI (M04-10 y M04-11)
 describe("Reglas de Interfaz y Responsividad (Front-end)", () => {
-
   // TEST 1
   it("M04-11 - Adapta la interfaz a 320px de ancho sin generar scroll horizontal para el Usuario Invitado", () => {
     const verificarSinScrollHorizontal = (anchoPantallaPx, anchoContenidoPx) => {
@@ -460,10 +452,10 @@ describe("Reglas de Interfaz y Responsividad (Front-end)", () => {
     };
 
     expect(verificarSinScrollHorizontal(320, 320)).toBe(true);
-    
+
     expect(verificarSinScrollHorizontal(320, 300)).toBe(true);
-    
-    expect(verificarSinScrollHorizontal(320, 350)).toBe(false); 
+
+    expect(verificarSinScrollHorizontal(320, 350)).toBe(false);
   });
 
   // TEST 2
@@ -474,10 +466,10 @@ describe("Reglas de Interfaz y Responsividad (Front-end)", () => {
     };
 
     expect(verificarFuenteMinima(16)).toBe(true);
-    
+
     expect(verificarFuenteMinima(18)).toBe(true);
-    
-    expect(verificarFuenteMinima(14)).toBe(false); 
+
+    expect(verificarFuenteMinima(14)).toBe(false);
   });
 
   // TEST 3
@@ -494,5 +486,4 @@ describe("Reglas de Interfaz y Responsividad (Front-end)", () => {
 
     expect(validarComponenteReserva(340, 18)).toBe(false);
   });
-
 });

@@ -42,7 +42,7 @@ function SlotGroup({
                 "flex h-12 items-center justify-center rounded-lg border text-base font-medium tabular-nums transition-colors duration-150",
                 slot.disponible && !selected && "bg-card hover:border-primary hover:bg-accent",
                 selected && "border-primary bg-primary text-primary-foreground",
-                !slot.disponible && "cursor-not-allowed border-dashed bg-muted text-muted-foreground line-through"
+                !slot.disponible && "cursor-not-allowed border-dashed bg-muted text-muted-foreground line-through",
               )}
             >
               {slot.horaInicio}

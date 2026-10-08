@@ -20,7 +20,7 @@ describe("datos del invitado", () => {
     const telefonoInvalido = guestSchema.safeParse({ ...invitadoValido, telefono: "abc" });
     expect(telefonoInvalido.success).toBe(false);
     expect(telefonoInvalido.error?.issues.map((issue) => issue.message)).toContain(
-      "Ingresá un teléfono válido (solo números)"
+      "Ingresá un teléfono válido (solo números)",
     );
   });
 });

@@ -58,7 +58,10 @@ describe("M02 - Franjas horarias", () => {
     cy.dataCy("schedule-group").should("have.length", 1).and("have.attr", "data-tipo", "permanent");
     cy.dataCy("schedule-group-days").should("have.text", "Lun a Vie");
     cy.dataCy("schedule-group-ranges").should("have.text", "07:00–15:00");
-    cy.dataCy("schedule-group-status").should("have.text", `Desde ${fechaCompacta.charAt(0).toUpperCase()}${fechaCompacta.slice(1)}`);
+    cy.dataCy("schedule-group-status").should(
+      "have.text",
+      `Desde ${fechaCompacta.charAt(0).toUpperCase()}${fechaCompacta.slice(1)}`,
+    );
     captura("CP-001-2-franja-guardada", "schedule-group");
   });
 

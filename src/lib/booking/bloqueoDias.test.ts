@@ -25,13 +25,18 @@ const horario: WeeklySchedule[] = [1, 2, 3, 4, 5].map((dia) => ({
   tipo: "permanent",
 }));
 
-const settings: BookingSettings = { intervaloMin: 0, antelacionMinHoras: 0, antelacionMaxDias: 60, limiteReservasDia: 10 };
+const settings: BookingSettings = {
+  intervaloMin: 0,
+  antelacionMinHoras: 0,
+  antelacionMaxDias: 60,
+  limiteReservasDia: 10,
+};
 
 function reserva(
   fecha: string,
   horaInicio: string,
   estado: Booking["estado"] = "confirmada",
-  evento: EventType = consulta
+  evento: EventType = consulta,
 ): Booking {
   const [h, m] = horaInicio.split(":").map(Number);
   const fin = h * 60 + m + evento.duracionMin;
@@ -109,7 +114,7 @@ describe("generateSlots y getAvailableDates: un día bloqueado no se ofrece en e
     };
     expect(getAvailableDates({ ...params, blockedDates: [] })).toContain("2026-10-24");
     expect(getAvailableDates({ ...params, blockedDates: [{ fecha: "2026-10-24", motivo: "Congreso" }] })).not.toContain(
-      "2026-10-24"
+      "2026-10-24",
     );
   });
 });

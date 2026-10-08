@@ -36,11 +36,11 @@ function RescheduleForm({ booking, onDone }: { booking: Booking; onDone: () => v
   const event = eventTypes.find((e) => e.id === booking.eventTypeId);
   const others = useMemo(
     () => bookings.filter((b) => b.id !== booking.id && (b.estado === "pendiente" || b.estado === "confirmada")),
-    [bookings, booking.id]
+    [bookings, booking.id],
   );
   const busy: BusyRange[] = useMemo(
     () => others.map((b) => ({ fecha: b.fecha, horaInicio: b.horaInicio, horaFin: b.horaFin, propio: false })),
-    [others]
+    [others],
   );
 
   const available = useMemo(() => {
@@ -55,7 +55,7 @@ function RescheduleForm({ booking, onDone }: { booking: Booking; onDone: () => v
         bookings: others,
         settings,
         locks: [],
-      })
+      }),
     );
   }, [event, month, weeklySchedules, blockedDates, others, settings]);
 
@@ -63,7 +63,7 @@ function RescheduleForm({ booking, onDone }: { booking: Booking; onDone: () => v
     if (!event || !fecha) return [];
     return markOverlappingSlots(
       generateSlots({ fecha, eventType: event, weeklySchedules, blockedDates, bookings: others, settings, locks: [] }),
-      busy
+      busy,
     ).filter((s) => s.disponible);
   }, [event, fecha, weeklySchedules, blockedDates, others, settings, busy]);
 
@@ -98,7 +98,12 @@ function RescheduleForm({ booking, onDone }: { booking: Booking; onDone: () => v
           {!fecha ? (
             <p className="text-sm text-muted-foreground">Elegí un día habilitado para ver los horarios libres.</p>
           ) : slots.length === 0 ? (
-            <EmptyState icon={CalendarX2} title="Sin horarios libres" description="Probá con otro día." className="py-6" />
+            <EmptyState
+              icon={CalendarX2}
+              title="Sin horarios libres"
+              description="Probá con otro día."
+              className="py-6"
+            />
           ) : (
             <>
               <p className="mb-2 text-sm font-medium">{formatFechaLarga(fecha)}</p>
@@ -113,7 +118,7 @@ function RescheduleForm({ booking, onDone }: { booking: Booking; onDone: () => v
                       "h-11 rounded-lg border text-sm font-medium tabular-nums transition-colors",
                       slot?.id === s.id
                         ? "border-primary bg-primary text-primary-foreground"
-                        : "bg-card hover:border-primary hover:bg-accent"
+                        : "bg-card hover:border-primary hover:bg-accent",
                     )}
                   >
                     {s.horaInicio}

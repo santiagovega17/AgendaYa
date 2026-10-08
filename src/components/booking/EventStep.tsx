@@ -10,13 +10,7 @@ const ModalityIcon = ({ modalidad }: { modalidad: EventType["modalidad"] }) =>
     <MapPin className="size-4" aria-hidden="true" />
   );
 
-export function EventStep({
-  events,
-  onSelect,
-}: {
-  events: EventType[];
-  onSelect: (id: string) => void;
-}) {
+export function EventStep({ events, onSelect }: { events: EventType[]; onSelect: (id: string) => void }) {
   return (
     <section aria-labelledby="paso-evento" className="space-y-3">
       <h2 id="paso-evento" className="text-lg font-semibold">

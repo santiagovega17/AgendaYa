@@ -6,15 +6,7 @@ import { z } from "zod";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from "@/components/ui/sheet";
@@ -64,7 +56,7 @@ function EventTypeForm({ editing, onDone }: { editing: EventType | null; onDone:
   const onSubmit = async (values: Values) => {
     const nombre = values.nombre.trim();
     const duplicate = eventTypes.some(
-      (e) => e.nombre.trim().toLowerCase() === nombre.toLowerCase() && e.id !== editing?.id
+      (e) => e.nombre.trim().toLowerCase() === nombre.toLowerCase() && e.id !== editing?.id,
     );
     if (duplicate) {
       form.setError("nombre", { message: "Ya existe un evento con ese nombre." }, { shouldFocus: true });

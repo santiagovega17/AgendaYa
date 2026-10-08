@@ -49,7 +49,8 @@ export function BookingList({
                   <StatusBadge status={b.estado} />
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  {formatFechaCompacta(b.fecha)} · <span className="tabular-nums">{b.horaInicio}</span> · {evento(b.eventTypeId)}
+                  {formatFechaCompacta(b.fecha)} · <span className="tabular-nums">{b.horaInicio}</span> ·{" "}
+                  {evento(b.eventTypeId)}
                 </p>
               </div>
               <ChevronRight className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
@@ -66,63 +67,65 @@ export function BookingList({
         ))}
       </ul>
 
-      {!cardsOnly && <div className="hidden overflow-hidden rounded-lg border md:block">
-        <Table>
-          <TableHeader>
-            <TableRow className="bg-muted/50 hover:bg-muted/50">
-              <TableHead>Fecha</TableHead>
-              <TableHead>Hora</TableHead>
-              <TableHead>Invitado</TableHead>
-              <TableHead className="hidden lg:table-cell">Evento</TableHead>
-              <TableHead>Estado</TableHead>
-              <TableHead className="hidden xl:table-cell">Nº</TableHead>
-              <TableHead className="text-right">
-                <span className="sr-only">Acciones</span>
-              </TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {bookings.map((b) => (
-              <TableRow key={b.id} className="cursor-pointer" onClick={() => onOpen(b.id)}>
-                <TableCell className="font-medium">{formatFechaCompacta(b.fecha)}</TableCell>
-                <TableCell className="tabular-nums">{b.horaInicio}</TableCell>
-                <TableCell>
-                  <span className="block max-w-48 truncate">
-                    {b.invitado.nombre} {b.invitado.apellido}
-                  </span>
-                  <span className="block max-w-48 truncate text-sm text-muted-foreground">{b.invitado.email}</span>
-                </TableCell>
-                <TableCell className="hidden max-w-40 truncate lg:table-cell">{evento(b.eventTypeId)}</TableCell>
-                <TableCell>
-                  <StatusBadge status={b.estado} />
-                </TableCell>
-                <TableCell className="hidden font-mono text-sm text-muted-foreground xl:table-cell">
-                  {b.numeroReserva}
-                </TableCell>
-                <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
-                  <div className="flex justify-end gap-1">
-                    {b.estado === "pendiente" && (
-                      <Button size="sm" onClick={() => onApprove(b.id)}>
-                        <Check aria-hidden="true" />
-                        Aprobar
-                      </Button>
-                    )}
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => onOpen(b.id)}
-                      aria-label={`Ver detalle de ${b.invitado.nombre} ${b.invitado.apellido}`}
-                    >
-                      Ver
-                      <ChevronRight aria-hidden="true" />
-                    </Button>
-                  </div>
-                </TableCell>
+      {!cardsOnly && (
+        <div className="hidden overflow-hidden rounded-lg border md:block">
+          <Table>
+            <TableHeader>
+              <TableRow className="bg-muted/50 hover:bg-muted/50">
+                <TableHead>Fecha</TableHead>
+                <TableHead>Hora</TableHead>
+                <TableHead>Invitado</TableHead>
+                <TableHead className="hidden lg:table-cell">Evento</TableHead>
+                <TableHead>Estado</TableHead>
+                <TableHead className="hidden xl:table-cell">Nº</TableHead>
+                <TableHead className="text-right">
+                  <span className="sr-only">Acciones</span>
+                </TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>}
+            </TableHeader>
+            <TableBody>
+              {bookings.map((b) => (
+                <TableRow key={b.id} className="cursor-pointer" onClick={() => onOpen(b.id)}>
+                  <TableCell className="font-medium">{formatFechaCompacta(b.fecha)}</TableCell>
+                  <TableCell className="tabular-nums">{b.horaInicio}</TableCell>
+                  <TableCell>
+                    <span className="block max-w-48 truncate">
+                      {b.invitado.nombre} {b.invitado.apellido}
+                    </span>
+                    <span className="block max-w-48 truncate text-sm text-muted-foreground">{b.invitado.email}</span>
+                  </TableCell>
+                  <TableCell className="hidden max-w-40 truncate lg:table-cell">{evento(b.eventTypeId)}</TableCell>
+                  <TableCell>
+                    <StatusBadge status={b.estado} />
+                  </TableCell>
+                  <TableCell className="hidden font-mono text-sm text-muted-foreground xl:table-cell">
+                    {b.numeroReserva}
+                  </TableCell>
+                  <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
+                    <div className="flex justify-end gap-1">
+                      {b.estado === "pendiente" && (
+                        <Button size="sm" onClick={() => onApprove(b.id)}>
+                          <Check aria-hidden="true" />
+                          Aprobar
+                        </Button>
+                      )}
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => onOpen(b.id)}
+                        aria-label={`Ver detalle de ${b.invitado.nombre} ${b.invitado.apellido}`}
+                      >
+                        Ver
+                        <ChevronRight aria-hidden="true" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      )}
     </>
   );
 }

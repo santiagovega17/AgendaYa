@@ -3,15 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import {
-  ArrowRight,
-  BellRing,
-  CalendarCheck,
-  CalendarDays,
-  Clock,
-  LayoutDashboard,
-  Smartphone,
-} from "lucide-react";
+import { ArrowRight, BellRing, CalendarCheck, CalendarDays, Clock, LayoutDashboard, Smartphone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -20,8 +12,16 @@ import { ThemeToggle } from "@/components/theme/ThemeToggle";
 
 const FEATURES = [
   { icon: Clock, title: "Tu horario, tus reglas", text: "Franjas, intervalos, antelación y días bloqueados." },
-  { icon: Smartphone, title: "Reserva en 4 pasos", text: "Tus clientes eligen turno desde el celular, sin registrarse." },
-  { icon: BellRing, title: "Avisos automáticos", text: "Confirmaciones, cancelaciones y cambios notificados al instante." },
+  {
+    icon: Smartphone,
+    title: "Reserva en 4 pasos",
+    text: "Tus clientes eligen turno desde el celular, sin registrarse.",
+  },
+  {
+    icon: BellRing,
+    title: "Avisos automáticos",
+    text: "Confirmaciones, cancelaciones y cambios notificados al instante.",
+  },
 ];
 
 export default function HomePage() {

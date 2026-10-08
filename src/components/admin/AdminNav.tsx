@@ -33,7 +33,7 @@ export function AdminNav({ onNavigate }: { onNavigate?: () => void }) {
               "flex h-10 items-center gap-3 rounded-lg px-3 text-sm font-medium transition-colors duration-150",
               active
                 ? "bg-secondary text-secondary-foreground"
-                : "text-muted-foreground hover:bg-accent hover:text-foreground"
+                : "text-muted-foreground hover:bg-accent hover:text-foreground",
             )}
           >
             <Icon className="size-[18px]" aria-hidden="true" />

@@ -25,13 +25,18 @@ const horario: WeeklySchedule[] = [1, 2, 3, 4, 5].map((dia) => ({
   tipo: "permanent",
 }));
 
-const settings: BookingSettings = { intervaloMin: 0, antelacionMinHoras: 0, antelacionMaxDias: 30, limiteReservasDia: 3 };
+const settings: BookingSettings = {
+  intervaloMin: 0,
+  antelacionMinHoras: 0,
+  antelacionMaxDias: 30,
+  limiteReservasDia: 3,
+};
 
 function reserva(
   fecha: string,
   horaInicio: string,
   estado: Booking["estado"] = "confirmada",
-  evento: EventType = consulta
+  evento: EventType = consulta,
 ): Booking {
   const [h, m] = horaInicio.split(":").map(Number);
   const fin = h * 60 + m + evento.duracionMin;

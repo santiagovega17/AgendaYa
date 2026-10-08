@@ -136,7 +136,10 @@ export function BookingDetailSheet({
 
                 <dl className="space-y-4">
                   <Row icon={Mail} label="Email">
-                    <a href={`mailto:${booking.invitado.email}`} className="text-primary underline-offset-4 hover:underline">
+                    <a
+                      href={`mailto:${booking.invitado.email}`}
+                      className="text-primary underline-offset-4 hover:underline"
+                    >
                       {booking.invitado.email}
                     </a>
                   </Row>
@@ -174,7 +177,12 @@ export function BookingDetailSheet({
                       Marcar completada
                     </Button>
                   )}
-                  <Button variant="outline" className="sm:flex-1" disabled={busy} onClick={() => setRescheduling(booking)}>
+                  <Button
+                    variant="outline"
+                    className="sm:flex-1"
+                    disabled={busy}
+                    onClick={() => setRescheduling(booking)}
+                  >
                     <CalendarClock aria-hidden="true" />
                     Reagendar
                   </Button>
@@ -205,10 +213,7 @@ export function BookingDetailSheet({
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Volver</AlertDialogCancel>
-            <AlertDialogAction
-              variant="destructive"
-              onClick={() => booking && run(() => cancel(booking.id))}
-            >
+            <AlertDialogAction variant="destructive" onClick={() => booking && run(() => cancel(booking.id))}>
               Cancelar reserva
             </AlertDialogAction>
           </AlertDialogFooter>

@@ -29,10 +29,7 @@ describe("M02 - Bloqueo de días", () => {
     cy.get("[data-sonner-toast]").should("contain.text", "Día bloqueado");
     cy.dataCy("block-confirm-dialog").should("not.exist");
     cy.dataCy("calendar-title").should("have.text", "Calendario");
-    cy.dataCy("blocked-day")
-      .should("have.length", 1)
-      .and("have.attr", "data-fecha", fecha)
-      .and("contain.text", motivo);
+    cy.dataCy("blocked-day").should("have.length", 1).and("have.attr", "data-fecha", fecha).and("contain.text", motivo);
     captura("CP-009-1-dia-bloqueado");
 
     // Assert: en el enlace público el día ya no se puede elegir
