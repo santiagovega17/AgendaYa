@@ -52,7 +52,7 @@ export async function prepararAgenda(escenario: Escenario = {}): Promise<AgendaP
   const password = process.env.E2E_ADMIN_PASSWORD;
   if (!url || !key || !email || !password) {
     throw new Error(
-      "Faltan variables en .env.local: NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY, E2E_ADMIN_EMAIL y E2E_ADMIN_PASSWORD (ver README)."
+      "Faltan variables en .env.local: NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY, E2E_ADMIN_EMAIL y E2E_ADMIN_PASSWORD (ver README).",
     );
   }
 
@@ -69,7 +69,7 @@ export async function prepararAgenda(escenario: Escenario = {}): Promise<AgendaP
 
     check(
       await db.from("perfiles").update({ nombre: ENTORNO.nombre, slug: ENTORNO.slug }).eq("id", adminId),
-      "actualizar perfil"
+      "actualizar perfil",
     );
     check(
       await db
@@ -80,7 +80,7 @@ export async function prepararAgenda(escenario: Escenario = {}): Promise<AgendaP
           antelacion_min_horas: escenario.antelacionMinHoras ?? ENTORNO.config.antelacion_min_horas,
         })
         .eq("admin_id", adminId),
-      "actualizar configuración"
+      "actualizar configuración",
     );
 
     const evento = check<{ id: string }>(
@@ -96,7 +96,7 @@ export async function prepararAgenda(escenario: Escenario = {}): Promise<AgendaP
         })
         .select("id")
         .single(),
-      "crear tipo de evento"
+      "crear tipo de evento",
     );
 
     if (escenario.conHorario !== false) {
@@ -109,10 +109,10 @@ export async function prepararAgenda(escenario: Escenario = {}): Promise<AgendaP
               dia_semana: dia,
               tipo: "permanente" as const,
               fecha_inicio: "2026-01-01",
-            }))
+            })),
           )
           .select("id"),
-        "crear horarios"
+        "crear horarios",
       );
       check(
         await db.from("franjas_horarias").insert(
@@ -120,9 +120,9 @@ export async function prepararAgenda(escenario: Escenario = {}): Promise<AgendaP
             horario_id: h.id,
             hora_inicio: ENTORNO.horario.inicio,
             hora_fin: ENTORNO.horario.fin,
-          }))
+          })),
         ),
-        "crear franjas"
+        "crear franjas",
       );
     }
 
@@ -140,9 +140,9 @@ export async function prepararAgenda(escenario: Escenario = {}): Promise<AgendaP
             invitado_email: `${r.nombre}.${r.apellido}@test.com`.toLowerCase(),
             invitado_telefono: "2615551234",
             estado: r.estado ?? "confirmada",
-          }))
+          })),
         ),
-        "crear reservas"
+        "crear reservas",
       );
     }
 
@@ -150,8 +150,10 @@ export async function prepararAgenda(escenario: Escenario = {}): Promise<AgendaP
       check(
         await db
           .from("dias_bloqueados")
-          .insert(escenario.diasBloqueados.map((d) => ({ admin_id: adminId, fecha: d.fecha, motivo: d.motivo ?? null }))),
-        "crear días bloqueados"
+          .insert(
+            escenario.diasBloqueados.map((d) => ({ admin_id: adminId, fecha: d.fecha, motivo: d.motivo ?? null })),
+          ),
+        "crear días bloqueados",
       );
     }
 

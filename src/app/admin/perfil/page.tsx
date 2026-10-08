@@ -9,15 +9,7 @@ import { toast } from "sonner";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
@@ -125,7 +117,9 @@ export default function PerfilPage() {
               <div className="flex items-center gap-4">
                 <Avatar className="size-16 text-lg">
                   {foto && <AvatarImage src={foto} alt="" />}
-                  <AvatarFallback className="bg-primary text-primary-foreground">{iniciales(nombre || "?")}</AvatarFallback>
+                  <AvatarFallback className="bg-primary text-primary-foreground">
+                    {iniciales(nombre || "?")}
+                  </AvatarFallback>
                 </Avatar>
                 <div className="min-w-0">
                   <p className="truncate font-semibold">{nombre || "Tu nombre"}</p>

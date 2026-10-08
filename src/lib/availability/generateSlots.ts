@@ -25,10 +25,7 @@ function fromMinutes(total: number): string {
   return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
 }
 
-function getSchedulesForDate(
-  dateStr: string,
-  schedules: WeeklySchedule[]
-): TimeRange[] {
+function getSchedulesForDate(dateStr: string, schedules: WeeklySchedule[]): TimeRange[] {
   const date = parse(dateStr, "yyyy-MM-dd", new Date());
   const dayOfWeek = date.getDay();
 
@@ -97,9 +94,7 @@ export function generateSlots(params: {
 
   const dayBookings = bookings.filter(
     (b) =>
-      b.fecha === fecha &&
-      b.eventTypeId === eventType.id &&
-      (b.estado === "confirmada" || b.estado === "pendiente")
+      b.fecha === fecha && b.eventTypeId === eventType.id && (b.estado === "confirmada" || b.estado === "pendiente"),
   );
 
   if (dayBookings.length >= settings.limiteReservasDia) {
@@ -126,23 +121,11 @@ export function generateSlots(params: {
         continue;
       }
 
-      const booked = dayBookings.some(
-        (b) => b.horaInicio === horaInicio
-      );
+      const booked = dayBookings.some((b) => b.horaInicio === horaInicio);
 
-      const activeLock = locks.find(
-        (l) =>
-          l.slotId === id &&
-          new Date(l.expiresAt) > now &&
-          l.sessionId !== sessionId
-      );
+      const activeLock = locks.find((l) => l.slotId === id && new Date(l.expiresAt) > now && l.sessionId !== sessionId);
 
-      const ownLock = locks.find(
-        (l) =>
-          l.slotId === id &&
-          new Date(l.expiresAt) > now &&
-          l.sessionId === sessionId
-      );
+      const ownLock = locks.find((l) => l.slotId === id && new Date(l.expiresAt) > now && l.sessionId === sessionId);
 
       slots.push({
         id,
@@ -171,11 +154,7 @@ export function markOverlappingSlots(slots: Slot[], busy: BusyRange[]): Slot[] {
     const start = toMinutes(slot.horaInicio);
     const end = toMinutes(slot.horaFin);
     const overlaps = busy.some(
-      (b) =>
-        !b.propio &&
-        b.fecha === slot.fecha &&
-        toMinutes(b.horaInicio) < end &&
-        toMinutes(b.horaFin) > start
+      (b) => !b.propio && b.fecha === slot.fecha && toMinutes(b.horaInicio) < end && toMinutes(b.horaFin) > start,
     );
     return overlaps ? { ...slot, disponible: false } : slot;
   });

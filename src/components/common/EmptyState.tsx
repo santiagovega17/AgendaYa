@@ -21,7 +21,7 @@ export function EmptyState({
       data-cy={dataCy}
       className={cn(
         "flex flex-col items-center justify-center rounded-xl border border-dashed px-6 py-10 text-center",
-        className
+        className,
       )}
     >
       <div className="mb-3 flex size-12 items-center justify-center rounded-full bg-secondary text-secondary-foreground">

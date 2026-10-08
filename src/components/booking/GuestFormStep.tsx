@@ -171,7 +171,7 @@ export function GuestFormStep({
                     data-cy="guest-nota-counter"
                     className={cn(
                       "ml-auto text-sm tabular-nums",
-                      nota.length >= NOTA_MAX ? "font-semibold text-destructive" : "text-muted-foreground"
+                      nota.length >= NOTA_MAX ? "font-semibold text-destructive" : "text-muted-foreground",
                     )}
                   >
                     {nota.length}/{NOTA_MAX}

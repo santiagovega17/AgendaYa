@@ -21,14 +21,14 @@ declare global {
 Cypress.Commands.add("dataCy", (valor: string) => cy.get(`[data-cy="${valor}"]`));
 
 Cypress.Commands.add("prepararAgenda", (escenario: Escenario = {}) =>
-  cy.task<AgendaPreparada>("prepararAgenda", escenario, { log: true })
+  cy.task<AgendaPreparada>("prepararAgenda", escenario, { log: true }),
 );
 
 // Los clics que llegan antes de que React hidrate el HTML del servidor se pierden.
 const hidratado = ($el: JQuery<HTMLElement>) => {
   expect(
     Object.keys($el[0]).some((k) => k.startsWith("__react")),
-    "elemento hidratado por React"
+    "elemento hidratado por React",
   ).to.eq(true);
 };
 
@@ -55,10 +55,10 @@ Cypress.Commands.add("loginAdmin", (ruta = "/admin/dashboard") => {
                 expect(Object.keys(ls).some((k) => k.startsWith("sb-") && k.endsWith("-auth-token"))).to.eq(true);
               });
           },
-        }
+        },
       );
       cy.visit(ruta);
-    }
+    },
   );
 });
 

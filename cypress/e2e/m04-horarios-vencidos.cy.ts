@@ -36,7 +36,10 @@ describe("M04 - Horarios vencidos", () => {
 
     // Assert: el horario queda resaltado y el botón inferior muestra la selección
     horario("15:00").should("have.attr", "aria-pressed", "true");
-    cy.dataCy("confirm-slot").should("be.enabled").and("contain.text", "Confirmar selección").and("contain.text", "15:00");
+    cy.dataCy("confirm-slot")
+      .should("be.enabled")
+      .and("contain.text", "Confirmar selección")
+      .and("contain.text", "15:00");
     captura("CP-011-1-horario-elegido");
 
     // Act: confirmar la selección. La reserva temporal la vence el servidor con su hora real,

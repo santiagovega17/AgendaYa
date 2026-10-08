@@ -45,7 +45,12 @@ const horario: WeeklySchedule[] = [1, 2, 3, 4, 5].map((dia) => ({
   tipo: "permanent",
 }));
 
-const settings: BookingSettings = { intervaloMin: 0, antelacionMinHoras: 0, antelacionMaxDias: 60, limiteReservasDia: 10 };
+const settings: BookingSettings = {
+  intervaloMin: 0,
+  antelacionMinHoras: 0,
+  antelacionMaxDias: 60,
+  limiteReservasDia: 10,
+};
 
 function reserva(fecha: string, horaInicio: string, estado: Booking["estado"] = "confirmada"): Booking {
   const [h, m] = horaInicio.split(":").map(Number);
@@ -129,11 +134,28 @@ describe("generateSlots: un día bloqueado no ofrece turnos en el enlace públic
 describe("getAvailableDates: el calendario público excluye los días bloqueados", () => {
   // Octubre 2026 tiene 22 días hábiles. `now` es del mes anterior para que todos sean reservables.
   const diasHabilesOctubre = [
-    "2026-10-01", "2026-10-02",
-    "2026-10-05", "2026-10-06", "2026-10-07", "2026-10-08", "2026-10-09",
-    "2026-10-12", "2026-10-13", "2026-10-14", "2026-10-15", "2026-10-16",
-    "2026-10-19", "2026-10-20", "2026-10-21", "2026-10-22", "2026-10-23",
-    "2026-10-26", "2026-10-27", "2026-10-28", "2026-10-29", "2026-10-30",
+    "2026-10-01",
+    "2026-10-02",
+    "2026-10-05",
+    "2026-10-06",
+    "2026-10-07",
+    "2026-10-08",
+    "2026-10-09",
+    "2026-10-12",
+    "2026-10-13",
+    "2026-10-14",
+    "2026-10-15",
+    "2026-10-16",
+    "2026-10-19",
+    "2026-10-20",
+    "2026-10-21",
+    "2026-10-22",
+    "2026-10-23",
+    "2026-10-26",
+    "2026-10-27",
+    "2026-10-28",
+    "2026-10-29",
+    "2026-10-30",
   ];
 
   const base = {
@@ -175,25 +197,25 @@ describe("getAvailableDates: el calendario público excluye los días bloqueados
 
 Del borrador se conservaron 3 tests, se agregaron 2 nuevos y se descartaron 9:
 
-| Cambio | Por qué |
-|---|---|
-| Se conservaron "devuelve solo las reservas pendientes y confirmadas", "las canceladas o completadas no impiden el bloqueo" y "un día bloqueado no ofrece turnos" (antes con el nombre "un día laborable bloqueado con motivo devuelve una lista vacía de turnos"). | Son las tres reglas centrales del RF03: qué reservas se listan, cuáles no y que el día deja de ofrecerse. |
-| **Nuevo:** un día con una reserva de "Consulta general" y otra de "Control" lista las dos. | El bloqueo es de todo el día, sin importar la actividad (a diferencia del límite diario del RF06, que es por actividad). El borrador solo usaba un tipo de evento. Para armarlo, `reserva()` recibe el tipo de evento como parámetro. |
-| **Nuevo:** un horario de única vez cargado en un día bloqueado no vuelve a habilitar ese día. | Prueba un conflicto real entre dos funcionalidades del módulo. Verifica primero que, sin el bloqueo, ese sábado sí aparece en el calendario. |
-| Se descartaron los tres casos inválidos (fecha con formato distinto de `YYYY-MM-DD`). | Los tres probaban lo mismo y presentaban como correcto algo que es una limitación: la función no valida el formato. No es una regla del RF03. |
-| Se descartaron los casos borde redundantes (sin reservas, motivo opcional, bloqueo del día siguiente, bloqueo de un sábado, todo el mes bloqueado) y el caso normal de `getAvailableDates`. | Al romper el código a propósito (sección 4), ninguno detectaba un error que no detectaran ya los tests que quedaron. |
+| Cambio                                                                                                                                                                                                                                                             | Por qué                                                                                                                                                                                                                               |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Se conservaron "devuelve solo las reservas pendientes y confirmadas", "las canceladas o completadas no impiden el bloqueo" y "un día bloqueado no ofrece turnos" (antes con el nombre "un día laborable bloqueado con motivo devuelve una lista vacía de turnos"). | Son las tres reglas centrales del RF03: qué reservas se listan, cuáles no y que el día deja de ofrecerse.                                                                                                                             |
+| **Nuevo:** un día con una reserva de "Consulta general" y otra de "Control" lista las dos.                                                                                                                                                                         | El bloqueo es de todo el día, sin importar la actividad (a diferencia del límite diario del RF06, que es por actividad). El borrador solo usaba un tipo de evento. Para armarlo, `reserva()` recibe el tipo de evento como parámetro. |
+| **Nuevo:** un horario de única vez cargado en un día bloqueado no vuelve a habilitar ese día.                                                                                                                                                                      | Prueba un conflicto real entre dos funcionalidades del módulo. Verifica primero que, sin el bloqueo, ese sábado sí aparece en el calendario.                                                                                          |
+| Se descartaron los tres casos inválidos (fecha con formato distinto de `YYYY-MM-DD`).                                                                                                                                                                              | Los tres probaban lo mismo y presentaban como correcto algo que es una limitación: la función no valida el formato. No es una regla del RF03.                                                                                         |
+| Se descartaron los casos borde redundantes (sin reservas, motivo opcional, bloqueo del día siguiente, bloqueo de un sábado, todo el mes bloqueado) y el caso normal de `getAvailableDates`.                                                                        | Al romper el código a propósito (sección 4), ninguno detectaba un error que no detectaran ya los tests que quedaron.                                                                                                                  |
 
 ## 4. Evaluación crítica
 
 El borrador era prolijo: compilaba, usaba los tipos reales, fijaba `now` en todos los casos y calculó a mano la lista de días hábiles de octubre. Pero tener más tests no lo hacía más efectivo. Para medirlo, se rompió el código a propósito de cinco maneras y se corrieron ambas versiones:
 
-| Error introducido en el código | Borrador (12 tests) | Versión final (5 tests) |
-|---|---|---|
-| Las reservas completadas cuentan como activas | Lo detecta | Lo detecta |
-| `generateSlots` ignora los días bloqueados | Lo detecta | Lo detecta |
-| Las reservas pendientes no cuentan como activas | Lo detecta | Lo detecta |
-| Un horario de única vez anula el bloqueo del día | **No lo detecta** | Lo detecta |
-| Al bloquear, solo se listan reservas de una actividad | **No lo detecta** | Lo detecta |
+| Error introducido en el código                        | Borrador (12 tests) | Versión final (5 tests) |
+| ----------------------------------------------------- | ------------------- | ----------------------- |
+| Las reservas completadas cuentan como activas         | Lo detecta          | Lo detecta              |
+| `generateSlots` ignora los días bloqueados            | Lo detecta          | Lo detecta              |
+| Las reservas pendientes no cuentan como activas       | Lo detecta          | Lo detecta              |
+| Un horario de única vez anula el bloqueo del día      | **No lo detecta**   | Lo detecta              |
+| Al bloquear, solo se listan reservas de una actividad | **No lo detecta**   | Lo detecta              |
 
 Qué no pudo hacer la herramienta sola: escribió tests correctos y bien organizados, pero repitió variantes del mismo caso, no distinguió entre un comportamiento deseado y uno que simplemente ocurre (aceptó como "correcto" que una fecha mal formada no bloquee nada) y no buscó interacciones con otras partes del módulo, como los horarios de única vez. Eso salió de revisar los tests contra el requerimiento y preguntarse qué errores reales dejarían pasar.
 

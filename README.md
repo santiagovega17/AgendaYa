@@ -6,7 +6,7 @@ Stack: Next.js 16 + React 19, Supabase (PostgreSQL), zod, Vitest (tests unitario
 
 ## 1. Levantar el frontend
 
-Requisitos: Node.js 20 o superior.
+Requisitos: Node.js 22 o superior. Cypress 16 y el cliente de Supabase usan el `WebSocket` nativo, que no existe en Node 20.
 
 ```bash
 npm install
@@ -19,7 +19,20 @@ La app queda en <http://localhost:3000>:
 - Panel del administrador: <http://localhost:3000/admin/login>
 - Enlace público del entorno de test: <http://localhost:3000/agenda/laura-perez>
 
-## 2. Tests unitarios (Vitest)
+## 2. Calidad local y pipeline
+
+Los mismos controles que corre GitHub Actions (`.github/workflows/main.yml`) ante un pull request hacia `main` o `develop`, y en las ramas `hotfix/**`:
+
+```bash
+npm run format:check   # Prettier
+npm run lint           # ESLint
+npm test               # Vitest
+npm run build          # build de Next.js
+```
+
+El plan de hotfix y el incidente INC-0417 están en `docs/tp7/informe.md`.
+
+## 3. Tests unitarios (Vitest)
 
 ```bash
 npm test
@@ -27,7 +40,7 @@ npm test
 
 Los tests están junto al código que prueban (`src/**/*.test.ts`), por ejemplo `src/lib/validation/casosDePrueba.test.ts` (casos del TP5) y `src/lib/availability/generateSlots.test.ts`.
 
-## 3. Tests E2E (Cypress)
+## 4. Tests E2E (Cypress)
 
 ### Configuración (una sola vez)
 
@@ -63,19 +76,19 @@ Todos usan la misma cuenta de test y cada test resetea su agenda: no correr los 
 
 Cada test arranca con `cy.prepararAgenda()`, que deja la agenda del administrador de test en el mismo estado que los casos de prueba del TP5:
 
-| Dato | Valor |
-|---|---|
-| Administrador | "Dra. Laura Pérez", enlace `/agenda/laura-perez` |
-| Tipo de evento | "Consulta general": 30 min, presencial, confirmación automática |
-| Horario laboral | Lunes a viernes de 09:00 a 18:00, permanente |
-| Configuración | Intervalo 0 min, antelación mínima 0 h, máxima 30 días, límite diario 8 |
-| Reservas y días bloqueados | Ninguno |
+| Dato                       | Valor                                                                   |
+| -------------------------- | ----------------------------------------------------------------------- |
+| Administrador              | "Dra. Laura Pérez", enlace `/agenda/laura-perez`                        |
+| Tipo de evento             | "Consulta general": 30 min, presencial, confirmación automática         |
+| Horario laboral            | Lunes a viernes de 09:00 a 18:00, permanente                            |
+| Configuración              | Intervalo 0 min, antelación mínima 0 h, máxima 30 días, límite diario 8 |
+| Reservas y días bloqueados | Ninguno                                                                 |
 
 El escenario se puede ajustar (ver `cypress/tasks/prepararAgenda.ts`):
 
 ```ts
 cy.prepararAgenda({
-  conHorario: false,                     // agenda sin horario laboral
+  conHorario: false, // agenda sin horario laboral
   limiteReservasDia: 10,
   reservas: [{ fecha, hora: "10:00", nombre: "María", apellido: "López" }],
   diasBloqueados: [{ fecha, motivo: "Capacitación" }],
@@ -86,13 +99,13 @@ Las fechas se calculan con `diaHabil()` (`cypress/support/fechas.ts`), que devue
 
 Comandos disponibles (`cypress/support/commands.ts`):
 
-| Comando | Qué hace |
-|---|---|
-| `cy.dataCy("nombre")` | Atajo de `cy.get('[data-cy="nombre"]')` |
-| `cy.prepararAgenda(escenario?)` | Resetea la agenda de test y carga el escenario |
-| `cy.loginAdmin(ruta?)` | Inicia sesión como administrador de test y abre la ruta (por defecto el dashboard) |
-| `cy.elegirDia("2026-10-21")` | Avanza el calendario visible hasta ese mes y hace clic en el día |
-| `cy.mostrarDia("2026-10-21")` | Igual que `elegirDia` pero sin hacer clic: devuelve el día para verificarlo (por ejemplo, `.should("be.disabled")`) |
+| Comando                         | Qué hace                                                                                                            |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| `cy.dataCy("nombre")`           | Atajo de `cy.get('[data-cy="nombre"]')`                                                                             |
+| `cy.prepararAgenda(escenario?)` | Resetea la agenda de test y carga el escenario                                                                      |
+| `cy.loginAdmin(ruta?)`          | Inicia sesión como administrador de test y abre la ruta (por defecto el dashboard)                                  |
+| `cy.elegirDia("2026-10-21")`    | Avanza el calendario visible hasta ese mes y hace clic en el día                                                    |
+| `cy.mostrarDia("2026-10-21")`   | Igual que `elegirDia` pero sin hacer clic: devuelve el día para verificarlo (por ejemplo, `.should("be.disabled")`) |
 
 Los avisos (toasts) no son interactivos y no tienen `data-cy`: se verifican con `cy.contains("[data-sonner-toast]", "Horario guardado")`.
 

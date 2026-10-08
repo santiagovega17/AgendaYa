@@ -61,7 +61,9 @@ describe("M04 - Nota opcional de la reserva", () => {
 
     // Assert: la reserva se confirma con la nota en el máximo permitido
     cy.dataCy("booking-success-title").should("have.text", "¡Reserva confirmada!");
-    cy.dataCy("booking-number").invoke("text").should("match", /^AYA-\d{4}$/);
+    cy.dataCy("booking-number")
+      .invoke("text")
+      .should("match", /^AYA-\d{4}$/);
     cy.dataCy("booking-time").should("have.text", "11:00 a 11:30 h");
     cy.dataCy("booking-guest-name").should("have.text", "Lucía Fernández");
     captura("CP-005-2-reserva-confirmada", "booking-success-title");
@@ -79,7 +81,9 @@ describe("M04 - Nota opcional de la reserva", () => {
 
     // Assert: solo quedan los primeros 200 caracteres y el contador no pasa del límite
     cy.dataCy("guest-nota").should("have.value", permitida);
-    cy.dataCy("guest-nota-counter").should("have.text", `${NOTA_MAX}/${NOTA_MAX}`).and("have.class", "text-destructive");
+    cy.dataCy("guest-nota-counter")
+      .should("have.text", `${NOTA_MAX}/${NOTA_MAX}`)
+      .and("have.class", "text-destructive");
     captura("CP-006-1-nota-recortada");
 
     // Act: ubicar el cursor al final y tipear una "X"

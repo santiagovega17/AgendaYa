@@ -70,7 +70,7 @@ export function AdminMonthCalendar(props: Props) {
     components: { DayButton: IndicatorDayButton },
     className: cn(
       "w-full bg-transparent p-0 [--cell-size:min(--spacing(11),calc((100vw_-_6rem)/7))] sm:[--cell-size:--spacing(12)]",
-      className
+      className,
     ),
     classNames: { root: "mx-auto w-full max-w-md" },
   };

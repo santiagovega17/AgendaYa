@@ -19,7 +19,7 @@ const esperarDespues = (resultado: Cypress.Chainable, ms: number) =>
 // La pausa va después de la acción: si fuera antes, React podría re-renderizar el elemento
 // ya encontrado y Cypress fallaría con "element is detached from the DOM".
 Cypress.Commands.overwrite<"click", "element">("click", (originalFn, subject, ...args) =>
-  esperarDespues(originalFn(subject, ...args), pausaMs())
+  esperarDespues(originalFn(subject, ...args), pausaMs()),
 );
 
 Cypress.Commands.overwrite<"type", "element">("type", (originalFn, subject, texto, opciones = {}) => {

@@ -6,15 +6,7 @@ import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toFechaStr } from "@/lib/format";
@@ -91,11 +83,18 @@ export function SettingsCard() {
   const submitting = form.formState.isSubmitting;
 
   const sampleEvent = eventTypes.find((e) => e.activo) ?? eventTypes[0];
-  const sampleFranja = weeklySchedules.find((s) => s.tipo === "permanent")?.franjas[0] ?? { inicio: "09:00", fin: "12:00" };
+  const sampleFranja = weeklySchedules.find((s) => s.tipo === "permanent")?.franjas[0] ?? {
+    inicio: "09:00",
+    fin: "12:00",
+  };
   const preview: string[] = [];
   if (sampleEvent) {
     const step = sampleEvent.duracionMin + (intervalo ?? 0);
-    for (let t = toMin(sampleFranja.inicio); t + sampleEvent.duracionMin <= toMin(sampleFranja.fin) && preview.length < 6; t += step) {
+    for (
+      let t = toMin(sampleFranja.inicio);
+      t + sampleEvent.duracionMin <= toMin(sampleFranja.fin) && preview.length < 6;
+      t += step
+    ) {
       preview.push(fromMin(t));
     }
   }

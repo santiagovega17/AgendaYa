@@ -5,8 +5,14 @@
 describe("M02 - Límite diario de reservas", () => {
   const LIMITE_FORMATO = "El límite debe ser un número entero mayor a cero";
   const captura = (nombre: string) => {
-    cy.dataCy("settings-save").scrollIntoView({ offset: { top: -500, left: 0 } });
+    cy.dataCy("settings-limiteReservasDia").scrollIntoView({ offset: { top: -80, left: 0 } });
     cy.screenshot(nombre, { capture: "viewport" });
+  };
+
+  // cy.reload() en Chrome no siempre dispara el evento load de Next y el test se corta ahí.
+  const recargarDisponibilidad = () => {
+    cy.visit("/admin/disponibilidad");
+    esperarConfiguracionCargada();
   };
 
   // Antelación mínima 0 solo existe en el entorno de test (el valor por defecto de la app es 2).
@@ -27,15 +33,15 @@ describe("M02 - Límite diario de reservas", () => {
     // Act: ingresar 10 y guardar
     cy.dataCy("settings-limiteReservasDia").clear().type("10").blur();
     cy.dataCy("settings-limiteReservasDia-error").should("not.exist");
-    cy.dataCy("settings-save").should("be.enabled").click();
+    // La barra superior es sticky: el clic por defecto la deja encima del botón.
+    cy.dataCy("settings-save").should("be.enabled").click({ scrollBehavior: "center" });
 
     // Assert: confirmación visible
     cy.get("[data-sonner-toast]").should("contain.text", "Configuración diaria guardada exitosamente");
     captura("CP-007-1-limite-guardado");
 
-    // Assert: al recargar, el valor quedó guardado
-    cy.reload();
-    esperarConfiguracionCargada();
+    // Assert: al volver a entrar, el valor quedó guardado
+    recargarDisponibilidad();
     cy.dataCy("settings-limiteReservasDia").should("have.value", "10");
     cy.dataCy("settings-save").should("be.disabled");
     captura("CP-007-2-valor-persistido");
@@ -51,8 +57,8 @@ describe("M02 - Límite diario de reservas", () => {
     // Assert: error del requerimiento debajo del campo
     cy.dataCy("settings-limiteReservasDia-error").should("be.visible").and("have.text", LIMITE_FORMATO);
 
-    // Act: intentar guardar igual
-    cy.dataCy("settings-save").click();
+    // Act: intentar guardar igual. El error alarga la tarjeta y el botón queda bajo la barra.
+    cy.dataCy("settings-save").click({ scrollBehavior: "center" });
 
     // Assert: no se guarda, el foco vuelve al campo y el error sigue visible
     cy.dataCy("settings-limiteReservasDia").should("have.focus");
@@ -60,9 +66,8 @@ describe("M02 - Límite diario de reservas", () => {
     cy.get("[data-sonner-toast]").should("not.exist");
     captura("CP-008-1-error-limite-cero");
 
-    // Assert: al recargar, el límite sigue en 8
-    cy.reload();
-    esperarConfiguracionCargada();
+    // Assert: al volver a entrar, el límite sigue en 8
+    recargarDisponibilidad();
     cy.dataCy("settings-limiteReservasDia").should("have.value", "8");
     captura("CP-008-2-valor-sin-cambios");
   });

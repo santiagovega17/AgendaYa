@@ -60,7 +60,12 @@ export function CommandMenu() {
         <Search className="size-5" aria-hidden="true" />
       </Button>
 
-      <CommandDialog open={open} onOpenChange={setOpen} title="Paleta de comandos" description="Navegá o ejecutá acciones rápidas">
+      <CommandDialog
+        open={open}
+        onOpenChange={setOpen}
+        title="Paleta de comandos"
+        description="Navegá o ejecutá acciones rápidas"
+      >
         <CommandInput placeholder="Escribí una sección o acción…" />
         <CommandList>
           <CommandEmpty>Sin resultados.</CommandEmpty>

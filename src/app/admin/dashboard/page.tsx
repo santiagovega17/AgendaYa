@@ -147,9 +147,7 @@ export default function DashboardPage() {
   const proximosBloqueos = blockedDates.filter((b) => b.fecha >= today);
   const delDia = bookings.filter((b) => b.fecha === selectedDay && b.estado !== "cancelada");
   const firstName =
-    profile.nombre
-      .split(/\s+/)
-      .find((w) => w && !/^(dr|dra|lic|ing|prof|sr|sra|srta)\.?$/i.test(w)) || "de nuevo";
+    profile.nombre.split(/\s+/).find((w) => w && !/^(dr|dra|lic|ing|prof|sr|sra|srta)\.?$/i.test(w)) || "de nuevo";
 
   const publicUrl = typeof window !== "undefined" ? `${window.location.origin}/agenda/${profile.slug}` : "";
   const copyLink = async () => {
@@ -173,10 +171,9 @@ export default function DashboardPage() {
     result.errors.forEach((e) => toast.error(e));
     if (result.blocked.length > 0) {
       setToBlock((prev) => prev.filter((d) => !result.blocked.includes(toFechaStr(d))));
-      toast.success(
-        result.blocked.length === 1 ? "Día bloqueado" : `${result.blocked.length} días bloqueados`,
-        { description: "Ya no aparecen en tu enlace público." }
-      );
+      toast.success(result.blocked.length === 1 ? "Día bloqueado" : `${result.blocked.length} días bloqueados`, {
+        description: "Ya no aparecen en tu enlace público.",
+      });
     }
     if (result.needsConfirm.length > 0) setConflicts(result.needsConfirm);
     else if (result.errors.length === 0) exitBlockMode();
@@ -186,7 +183,7 @@ export default function DashboardPage() {
     setWorking(true);
     const result = await confirmBlockDates(
       conflicts.map((c) => c.fecha),
-      motivo.trim() || undefined
+      motivo.trim() || undefined,
     );
     setWorking(false);
     const total = conflicts.reduce((n, c) => n + c.bookings.length, 0);
@@ -231,7 +228,12 @@ export default function DashboardPage() {
       />
 
       <section aria-label="Resumen" className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
-        <StatCard icon={CalendarCheck} label="Turnos de hoy" value={hoy.length} hint={hoy[0] ? `Próximo: ${hoy[0].horaInicio}` : "Día libre"} />
+        <StatCard
+          icon={CalendarCheck}
+          label="Turnos de hoy"
+          value={hoy.length}
+          hint={hoy[0] ? `Próximo: ${hoy[0].horaInicio}` : "Día libre"}
+        />
         <StatCard icon={CalendarRange} label="Esta semana" value={semana.length} hint="Confirmados y pendientes" />
         <StatCard
           icon={Hourglass}
@@ -468,8 +470,8 @@ export default function DashboardPage() {
               Hay reservas en {conflicts.length === 1 ? "ese día" : "esos días"}
             </AlertDialogTitle>
             <AlertDialogDescription>
-              Si continuás, se cancelan {conflictTotal} {conflictTotal === 1 ? "reserva" : "reservas"} y se envía un aviso
-              de cancelación a cada invitado.
+              Si continuás, se cancelan {conflictTotal} {conflictTotal === 1 ? "reserva" : "reservas"} y se envía un
+              aviso de cancelación a cada invitado.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <div className="max-h-64 space-y-3 overflow-y-auto">

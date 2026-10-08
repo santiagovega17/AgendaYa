@@ -78,7 +78,7 @@ function AgendaContent() {
     });
     const key = (b: (typeof list)[number]) => `${b.fecha} ${b.horaInicio}`;
     return list.sort((a, b) =>
-      periodo === "pasadas" && !dia ? key(b).localeCompare(key(a)) : key(a).localeCompare(key(b))
+      periodo === "pasadas" && !dia ? key(b).localeCompare(key(a)) : key(a).localeCompare(key(b)),
     );
   }, [bookings, estado, evento, periodo, dia, query, today]);
 
@@ -129,7 +129,10 @@ function AgendaContent() {
         <TabsContent value="lista" className="space-y-4">
           <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
             <div className="relative lg:max-w-xs lg:flex-1">
-              <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
+              <Search
+                className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
+                aria-hidden="true"
+              />
               <Input
                 type="search"
                 placeholder="Buscar por nombre, email o Nº"

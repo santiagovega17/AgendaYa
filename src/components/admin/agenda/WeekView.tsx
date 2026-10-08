@@ -43,10 +43,20 @@ export function WeekView({
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-2">
-        <Button variant="outline" size="icon" onClick={() => onWeekChange(addWeeks(weekStart, -1))} aria-label="Semana anterior">
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={() => onWeekChange(addWeeks(weekStart, -1))}
+          aria-label="Semana anterior"
+        >
           <ChevronLeft aria-hidden="true" />
         </Button>
-        <Button variant="outline" size="icon" onClick={() => onWeekChange(addWeeks(weekStart, 1))} aria-label="Semana siguiente">
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={() => onWeekChange(addWeeks(weekStart, 1))}
+          aria-label="Semana siguiente"
+        >
           <ChevronRight aria-hidden="true" />
         </Button>
         <Button variant="ghost" onClick={() => onWeekChange(startOfWeek(new Date(), { weekStartsOn: 1 }))}>
@@ -71,7 +81,7 @@ export function WeekView({
               aria-label={format(d, "EEEE d 'de' MMMM", { locale: es })}
               className={cn(
                 "flex min-h-24 flex-col rounded-lg border bg-card lg:min-h-64",
-                isToday && "border-primary ring-1 ring-primary"
+                isToday && "border-primary ring-1 ring-primary",
               )}
             >
               <button
@@ -81,7 +91,9 @@ export function WeekView({
                 aria-label={`Ver lista de ${format(d, "EEEE d", { locale: es })}`}
               >
                 <span className="text-sm capitalize text-muted-foreground">{format(d, "EEE", { locale: es })}</span>
-                <span className={cn("text-lg font-semibold tabular-nums", isToday && "text-primary")}>{format(d, "d")}</span>
+                <span className={cn("text-lg font-semibold tabular-nums", isToday && "text-primary")}>
+                  {format(d, "d")}
+                </span>
               </button>
               <div className="flex-1 space-y-1.5 p-2">
                 {isBlocked && (
@@ -98,7 +110,7 @@ export function WeekView({
                     onClick={() => onOpen(b.id)}
                     className={cn(
                       "block w-full rounded-md border-l-4 px-2 py-1.5 text-left text-sm transition-opacity hover:opacity-80",
-                      ESTADO_STYLE[b.estado]
+                      ESTADO_STYLE[b.estado],
                     )}
                   >
                     <span className="block font-semibold tabular-nums">{b.horaInicio}</span>

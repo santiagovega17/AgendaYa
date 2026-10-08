@@ -77,7 +77,7 @@ export async function fetchBusySlots(
   adminId: string,
   desde: string,
   hasta: string,
-  sessionId: string
+  sessionId: string,
 ): Promise<BusySlots> {
   const { data, error } = await getSupabase().rpc("turnos_ocupados", {
     p_admin_id: adminId,

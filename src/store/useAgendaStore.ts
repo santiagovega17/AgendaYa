@@ -70,11 +70,7 @@ interface AgendaState extends AgendaData {
 interface AgendaActions {
   init: () => Promise<void>;
   login: (email: string, password: string) => Promise<ActionResult>;
-  signUp: (
-    nombre: string,
-    email: string,
-    password: string
-  ) => Promise<ActionResult & { needsConfirmation?: boolean }>;
+  signUp: (nombre: string, email: string, password: string) => Promise<ActionResult & { needsConfirmation?: boolean }>;
   requestPasswordReset: (email: string) => Promise<ActionResult>;
   logout: () => Promise<void>;
   loadAll: () => Promise<void>;
@@ -89,19 +85,19 @@ interface AgendaActions {
     diaSemana: number,
     franjas: TimeRange[],
     tipo: ScheduleType,
-    fechaInicio?: string
+    fechaInicio?: string,
   ) => Promise<ActionResult>;
   updateWeeklySchedule: (
     id: string,
     diaSemana: number,
     franjas: TimeRange[],
     tipo: ScheduleType,
-    fechaInicio?: string
+    fechaInicio?: string,
   ) => Promise<ActionResult>;
   removeWeeklySchedule: (id: string) => Promise<ActionResult>;
   toggleBlockedDate: (
     fecha: string,
-    motivo?: string
+    motivo?: string,
   ) => Promise<{
     action: "blocked" | "unblocked" | "needs_confirm" | "error";
     bookings: Booking[];
@@ -117,12 +113,7 @@ interface AgendaActions {
   approveBooking: (id: string) => Promise<ActionResult>;
   cancelBooking: (id: string) => Promise<ActionResult>;
   completeBooking: (id: string) => Promise<ActionResult>;
-  rescheduleBooking: (
-    id: string,
-    fecha: string,
-    horaInicio: string,
-    horaFin: string
-  ) => Promise<ActionResult>;
+  rescheduleBooking: (id: string, fecha: string, horaInicio: string, horaFin: string) => Promise<ActionResult>;
   markAllNotificationsRead: () => Promise<void>;
 }
 
@@ -167,11 +158,7 @@ export const useAgendaStore = create<AgendaStore>()((set, get) => {
   };
 
   const fetchBlockedDates = async () => {
-    const { data, error } = await supabase()
-      .from("dias_bloqueados")
-      .select("*")
-      .eq("admin_id", uid())
-      .order("fecha");
+    const { data, error } = await supabase().from("dias_bloqueados").select("*").eq("admin_id", uid()).order("fecha");
     if (error) throw error;
     set({ blockedDates: data.map(toBlockedDate) });
   };
@@ -188,10 +175,7 @@ export const useAgendaStore = create<AgendaStore>()((set, get) => {
     set({ notifications: data.map(toNotification) });
   };
 
-  const updateBookingState = async (
-    id: string,
-    estado: Booking["estado"]
-  ): Promise<ActionResult> => {
+  const updateBookingState = async (id: string, estado: Booking["estado"]): Promise<ActionResult> => {
     const { error } = await supabase().from("reservas").update({ estado }).eq("id", id);
     if (error) return fail(errorMessage(error));
     await Promise.all([fetchBookings(), fetchNotifications()]);
@@ -306,12 +290,7 @@ export const useAgendaStore = create<AgendaStore>()((set, get) => {
         eventTypes: eventos.data.map(toEventType),
       });
 
-      await Promise.all([
-        fetchSchedules(),
-        fetchBlockedDates(),
-        fetchBookings(),
-        fetchNotifications(),
-      ]);
+      await Promise.all([fetchSchedules(), fetchBlockedDates(), fetchBookings(), fetchNotifications()]);
     },
 
     refresh: async () => {
@@ -339,9 +318,7 @@ export const useAgendaStore = create<AgendaStore>()((set, get) => {
       if (error) {
         if (error.code === "23505") return fail("Ese enlace público ya está en uso. Elegí otro.");
         if (error.code === "23514") {
-          return fail(
-            "Revisá los datos: el enlace solo admite minúsculas, números y guiones (3 a 50 caracteres)."
-          );
+          return fail("Revisá los datos: el enlace solo admite minúsculas, números y guiones (3 a 50 caracteres).");
         }
         return fail(errorMessage(error));
       }
@@ -400,7 +377,7 @@ export const useAgendaStore = create<AgendaStore>()((set, get) => {
       if (error) {
         if (error.code === "23503") {
           return fail(
-            "No se puede eliminar porque tiene reservas registradas. Desactivalo para que no se pueda reservar."
+            "No se puede eliminar porque tiene reservas registradas. Desactivalo para que no se pueda reservar.",
           );
         }
         return fail(errorMessage(error));
@@ -441,21 +418,18 @@ export const useAgendaStore = create<AgendaStore>()((set, get) => {
         .from("horarios_semanales")
         .upsert(
           { admin_id: uid(), dia_semana: dia, tipo: toDbScheduleType(tipo), fecha_inicio: fecha },
-          { onConflict: "admin_id,dia_semana,tipo,fecha_inicio" }
+          { onConflict: "admin_id,dia_semana,tipo,fecha_inicio" },
         )
         .select()
         .single();
       if (error) return fail(errorMessage(error));
 
-      const { error: deleteError } = await db
-        .from("franjas_horarias")
-        .delete()
-        .eq("horario_id", horario.id);
+      const { error: deleteError } = await db.from("franjas_horarias").delete().eq("horario_id", horario.id);
       if (deleteError) return fail(errorMessage(deleteError));
 
-      const { error: insertError } = await db.from("franjas_horarias").insert(
-        franjas.map((f) => ({ horario_id: horario.id, hora_inicio: f.inicio, hora_fin: f.fin }))
-      );
+      const { error: insertError } = await db
+        .from("franjas_horarias")
+        .insert(franjas.map((f) => ({ horario_id: horario.id, hora_inicio: f.inicio, hora_fin: f.fin })));
       if (insertError) {
         await fetchSchedules();
         if (insertError.code === "23514") {
@@ -507,11 +481,7 @@ export const useAgendaStore = create<AgendaStore>()((set, get) => {
       const db = supabase();
 
       if (get().blockedDates.some((b) => b.fecha === fecha)) {
-        const { error } = await db
-          .from("dias_bloqueados")
-          .delete()
-          .eq("admin_id", uid())
-          .eq("fecha", fecha);
+        const { error } = await db.from("dias_bloqueados").delete().eq("admin_id", uid()).eq("fecha", fecha);
         if (error) return { action: "error", bookings: [], error: errorMessage(error) };
         set((s) => ({ blockedDates: s.blockedDates.filter((b) => b.fecha !== fecha) }));
         return { action: "unblocked", bookings: [] };
@@ -580,11 +550,7 @@ export const useAgendaStore = create<AgendaStore>()((set, get) => {
     },
 
     unblockDate: async (fecha) => {
-      const { error } = await supabase()
-        .from("dias_bloqueados")
-        .delete()
-        .eq("admin_id", uid())
-        .eq("fecha", fecha);
+      const { error } = await supabase().from("dias_bloqueados").delete().eq("admin_id", uid()).eq("fecha", fecha);
       if (error) return fail(errorMessage(error));
       set((s) => ({ blockedDates: s.blockedDates.filter((b) => b.fecha !== fecha) }));
       return OK;
@@ -614,11 +580,7 @@ export const useAgendaStore = create<AgendaStore>()((set, get) => {
     markAllNotificationsRead: async () => {
       if (!get().notifications.some((n) => !n.leida)) return;
       set((s) => ({ notifications: s.notifications.map((n) => ({ ...n, leida: true })) }));
-      await supabase()
-        .from("notificaciones")
-        .update({ leida: true })
-        .eq("admin_id", uid())
-        .eq("leida", false);
+      await supabase().from("notificaciones").update({ leida: true }).eq("admin_id", uid()).eq("leida", false);
     },
   };
 });

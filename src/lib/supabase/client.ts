@@ -10,9 +10,7 @@ let client: SupabaseClient<Database> | null = null;
 export function getSupabase(): SupabaseClient<Database> {
   if (!client) {
     if (!SUPABASE_URL || !SUPABASE_KEY) {
-      throw new Error(
-        "Faltan NEXT_PUBLIC_SUPABASE_URL y NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY (ver .env.example)."
-      );
+      throw new Error("Faltan NEXT_PUBLIC_SUPABASE_URL y NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY (ver .env.example).");
     }
     client = createClient<Database>(SUPABASE_URL, SUPABASE_KEY);
   }

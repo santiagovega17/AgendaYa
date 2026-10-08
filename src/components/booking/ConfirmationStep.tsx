@@ -38,7 +38,7 @@ export function ConfirmationStep({
         <div
           className={cn(
             "flex size-16 items-center justify-center rounded-full",
-            pending ? "bg-warning-soft text-warning-soft-foreground" : "bg-success-soft text-success-soft-foreground"
+            pending ? "bg-warning-soft text-warning-soft-foreground" : "bg-success-soft text-success-soft-foreground",
           )}
         >
           <Icon className="size-8" aria-hidden="true" />
@@ -85,6 +85,7 @@ export function ConfirmationStep({
               fecha: booking.fecha,
               horaInicio: booking.horaInicio,
               horaFin: booking.horaFin,
+              timezone: profile.timezone,
             })
           }
         >

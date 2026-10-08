@@ -41,14 +41,14 @@ export function CountdownBanner({ expiresAt, onExpire }: { expiresAt: string; on
     <div
       className={cn(
         "sticky top-2 z-20 overflow-hidden rounded-xl border shadow-soft transition-colors duration-300",
-        urgent ? "border-destructive/40 bg-danger-soft text-danger-soft-foreground" : "bg-warning-soft text-warning-soft-foreground"
+        urgent
+          ? "border-destructive/40 bg-danger-soft text-danger-soft-foreground"
+          : "bg-warning-soft text-warning-soft-foreground",
       )}
     >
       <div className="flex items-center gap-3 px-4 py-3">
         <Timer className="size-5 shrink-0" aria-hidden="true" />
-        <p className="flex-1">
-          {urgent ? "Último minuto para confirmar" : "Te guardamos este horario por"}
-        </p>
+        <p className="flex-1">{urgent ? "Último minuto para confirmar" : "Te guardamos este horario por"}</p>
         <span
           role="timer"
           aria-label={`Tiempo restante ${mins} minutos ${secs} segundos`}
@@ -59,7 +59,10 @@ export function CountdownBanner({ expiresAt, onExpire }: { expiresAt: string; on
         </span>
       </div>
       <div className="h-1 bg-current/10" aria-hidden="true">
-        <div className="h-full bg-current transition-[width] duration-1000 ease-linear" style={{ width: `${progress}%` }} />
+        <div
+          className="h-full bg-current transition-[width] duration-1000 ease-linear"
+          style={{ width: `${progress}%` }}
+        />
       </div>
       <p className="sr-only" aria-live="assertive">
         {urgent && safe > 0 ? "Queda menos de un minuto para confirmar la reserva." : ""}

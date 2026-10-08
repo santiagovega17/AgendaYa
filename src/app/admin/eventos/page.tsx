@@ -16,7 +16,15 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -62,9 +70,10 @@ function EventosContent() {
   const handleToggle = async (evt: EventType) => {
     const r = await toggleEventType(evt.id);
     if (!r.ok) toast.error(r.error);
-    else toast.success(evt.activo ? `"${evt.nombre}" desactivado` : `"${evt.nombre}" activado`, {
-      description: evt.activo ? "Ya no se puede reservar." : "Ya se puede reservar desde tu enlace.",
-    });
+    else
+      toast.success(evt.activo ? `"${evt.nombre}" desactivado` : `"${evt.nombre}" activado`, {
+        description: evt.activo ? "Ya no se puede reservar." : "Ya se puede reservar desde tu enlace.",
+      });
   };
 
   const handleDelete = async () => {
@@ -150,9 +159,7 @@ function EventosContent() {
                 </CardHeader>
                 <CardContent className="flex-1 space-y-3">
                   {!evt.confirmacionAuto && <Badge variant="warning">Requiere aprobación</Badge>}
-                  <p className="line-clamp-3 text-sm text-muted-foreground">
-                    {evt.descripcion || "Sin descripción."}
-                  </p>
+                  <p className="line-clamp-3 text-sm text-muted-foreground">{evt.descripcion || "Sin descripción."}</p>
                 </CardContent>
                 <CardFooter className="justify-between border-t">
                   <Label htmlFor={switchId} className="cursor-pointer font-normal">
@@ -175,11 +182,7 @@ function EventosContent() {
         </div>
       )}
 
-      <EventTypeSheet
-        open={sheetOpen || wantsNew}
-        editing={wantsNew ? null : editing}
-        onOpenChange={onSheetChange}
-      />
+      <EventTypeSheet open={sheetOpen || wantsNew} editing={wantsNew ? null : editing} onOpenChange={onSheetChange} />
 
       <AlertDialog open={!!deleting} onOpenChange={(o) => !o && setDeleting(null)}>
         <AlertDialogContent>

@@ -28,8 +28,7 @@ export function formatFechaRelativa(fecha: string) {
   return formatFechaLarga(fecha);
 }
 
-export const formatHace = (iso: string) =>
-  formatDistanceToNow(new Date(iso), { addSuffix: true, locale: es });
+export const formatHace = (iso: string) => formatDistanceToNow(new Date(iso), { addSuffix: true, locale: es });
 
 export const formatMes = (date: Date) => capitalize(format(date, "MMMM yyyy", { locale: es }));
 

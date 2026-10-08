@@ -83,7 +83,7 @@ function ApplyStep({
             onClick={() => setTipo(o.value)}
             className={cn(
               "flex gap-3 rounded-lg border p-4 text-left transition-colors",
-              tipo === o.value ? "border-primary bg-accent ring-1 ring-primary" : "hover:bg-accent/60"
+              tipo === o.value ? "border-primary bg-accent ring-1 ring-primary" : "hover:bg-accent/60",
             )}
           >
             <o.icon className="mt-0.5 size-5 shrink-0 text-primary" aria-hidden="true" />
@@ -105,7 +105,11 @@ function ApplyStep({
             onChange={(e) => setFecha(e.target.value)}
             data-cy="schedule-start-date"
           />
-          {fecha && <p className="text-sm text-muted-foreground" data-cy="schedule-start-date-hint">Vigente desde el {formatFechaLarga(fecha).toLowerCase()}.</p>}
+          {fecha && (
+            <p className="text-sm text-muted-foreground" data-cy="schedule-start-date-hint">
+              Vigente desde el {formatFechaLarga(fecha).toLowerCase()}.
+            </p>
+          )}
         </div>
       )}
       <DialogFooter>
@@ -300,19 +304,16 @@ export function ScheduleDialog({
   draft: ScheduleDraft | null;
   isEdit: boolean;
   onOpenChange: (open: boolean) => void;
-  onSave: (values: { dias: number[]; franjas: TimeRange[] }, tipo: ScheduleType, fechaInicio: string) => Promise<boolean>;
+  onSave: (
+    values: { dias: number[]; franjas: TimeRange[] },
+    tipo: ScheduleType,
+    fechaInicio: string,
+  ) => Promise<boolean>;
 }) {
   return (
     <Dialog open={!!draft} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg" data-cy="schedule-dialog">
-        {draft && (
-          <ScheduleForm
-            draft={draft}
-            isEdit={isEdit}
-            onCancel={() => onOpenChange(false)}
-            onSave={onSave}
-          />
-        )}
+        {draft && <ScheduleForm draft={draft} isEdit={isEdit} onCancel={() => onOpenChange(false)} onSave={onSave} />}
       </DialogContent>
     </Dialog>
   );

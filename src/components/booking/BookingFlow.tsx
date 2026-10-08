@@ -233,22 +233,17 @@ export function BookingFlow({ slug }: { slug: string }) {
       });
       return markOverlappingSlots(slots, busy.ranges);
     },
-    [agenda, selectedEvent, busy, now, sessionId]
+    [agenda, selectedEvent, busy, now, sessionId],
   );
 
   const availableDates = useMemo(() => {
     if (!selectedEvent) return [];
     return eachDayOfInterval({ start: startOfMonth(currentMonth), end: endOfMonth(currentMonth) })
       .map((d) => format(d, "yyyy-MM-dd"))
-      .filter((fecha) =>
-        computeSlots(fecha).some((s) => s.disponible || s.lockedBySession === sessionId)
-      );
+      .filter((fecha) => computeSlots(fecha).some((s) => s.disponible || s.lockedBySession === sessionId));
   }, [computeSlots, currentMonth, selectedEvent, sessionId]);
 
-  const slots = useMemo(
-    () => (selectedDate ? computeSlots(selectedDate) : []),
-    [computeSlots, selectedDate]
-  );
+  const slots = useMemo(() => (selectedDate ? computeSlots(selectedDate) : []), [computeSlots, selectedDate]);
 
   const pendingSlot = slots.find((s) => s.id === pendingSlotId) ?? null;
   // AYA-M04-RF06: el horario elegido dejó de estar disponible durante la navegación.
@@ -264,7 +259,11 @@ export function BookingFlow({ slug }: { slug: string }) {
         className="mt-12 bg-card"
         icon={isError ? WifiOff : CalendarSearch}
         title={isError ? "No pudimos cargar la agenda" : "Agenda no encontrada"}
-        description={isError ? "Revisá tu conexión e intentá nuevamente." : "El enlace que ingresaste no existe. Pedile al profesional que te lo vuelva a enviar."}
+        description={
+          isError
+            ? "Revisá tu conexión e intentá nuevamente."
+            : "El enlace que ingresaste no existe. Pedile al profesional que te lo vuelva a enviar."
+        }
         action={
           isError ? (
             <Button onClick={() => window.location.reload()} data-cy="agenda-retry">
@@ -332,7 +331,8 @@ export function BookingFlow({ slug }: { slug: string }) {
     setPendingSlotId(null);
     setDialog({
       title: "Se terminó el tiempo",
-      description: "Pasaron los 15 minutos y liberamos el horario para otras personas. Elegí un turno de nuevo para continuar.",
+      description:
+        "Pasaron los 15 minutos y liberamos el horario para otras personas. Elegí un turno de nuevo para continuar.",
     });
   };
 
